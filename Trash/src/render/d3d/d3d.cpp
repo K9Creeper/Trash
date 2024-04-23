@@ -3,13 +3,12 @@
 
 #pragma comment(lib, "d3d9.lib")
 
-D3D11WindowInstance::D3D11WindowInstance(int width, int height)
+D3D11WindowInstance::D3D11WindowInstance(const float& width, const float& height)
 {
-	this->width = width;
-	this->height = height;
-
-	_d3d11._drawdata = new D3DDrawData();
-	_d3d11._drawdata->iWindow = this;
+	this->_display.size = { width, height };
+	this->_display.position = { 100, 100};
+	_d3d11._drawdata = new DrawData();
+	_d3d11._drawdata->_d3ddrawdata.iWindow = this;
 }
 
 D3D11WindowInstance::~D3D11WindowInstance()
@@ -62,11 +61,12 @@ void D3D11WindowInstance::CleanupDeviceD3D() {
 }
 
 void D3D11WindowInstance::Create() {
+	static Color clearColor(1.f, 1.f, 1.f, 1.f);
 	WNDCLASSEXW wc;
 	{
 		wc = { sizeof(wc), CS_CLASSDC, WindowProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"TrashClass", nullptr };
 		RegisterClassExW(&wc);
-		_hwnd = ::CreateWindowW(wc.lpszClassName, L"Trash", WS_OVERLAPPEDWINDOW, 100, 100, width, height, nullptr, nullptr, wc.hInstance, nullptr);
+		_hwnd = ::CreateWindowW(wc.lpszClassName, L"Trash", WS_OVERLAPPEDWINDOW, _display.position.x, _display.position.y, _display.size.x, _display.size.y, nullptr, nullptr, wc.hInstance, nullptr);
 
 		if (!CreateDeviceD3D())
 		{
@@ -78,11 +78,34 @@ void D3D11WindowInstance::Create() {
 		ShowWindow(_hwnd, SW_SHOWDEFAULT);
 		UpdateWindow(_hwnd);
 
+		_d3d11._drawdata->Init();
+
 		MSG msg;
 		bool running = true;
 		while (running) {
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) { TranslateMessage(&msg); DispatchMessage(&msg); if (msg.message == WM_QUIT) { CleanupDeviceD3D(); running = false; } }
+			
+			if (!running)
+				break;
+			
+			_d3d11._drawdata->NewFrame();
+
+			_d3d11.d3ddev->SetRenderState(D3DRS_ZENABLE, FALSE);
+			_d3d11.d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+			_d3d11.d3ddev->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+			
+			_d3d11.d3ddev->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clearColor.ToU32(), 1.0f, 0);
+
+			if (_d3d11.d3ddev->BeginScene() >= 0)
+			{
+				_d3d11._drawdata->RenderData();
+			}
+
+			HRESULT result = _d3d11.d3ddev->Present(nullptr, nullptr, nullptr, nullptr);
 		}
+
+		_d3d11._drawdata->Shutdown();
 	}
-	CleanupDeviceD3D();
+	DestroyWindow(_hwnd);
+	UnregisterClassW(wc.lpszClassName, wc.hInstance);
 }
