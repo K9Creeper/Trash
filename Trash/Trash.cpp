@@ -1,7 +1,9 @@
 #include <Windows.h>
-#include "src/render/d3d/d3d.h"
+#include <thread>
+
+#include "src/engine/engine.h"
 
 int main(){
-    D3D11WindowInstance win(600, 600);
-    win.Create();
+	Engine engine;
+	engine.Start();
 }

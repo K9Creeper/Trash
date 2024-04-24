@@ -121,6 +121,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -141,16 +142,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\render\d3d\d3d.cpp" />
-    <ClCompile Include="src\render\draw\draw.cpp" />
+    <ClCompile Include="src\engine\engine.cpp" />
+    <ClCompile Include="src\engine\render\floodgui\flood_gui_draw.cpp" />
+    <ClCompile Include="src\engine\render\render.cpp" />
     <ClCompile Include="Trash.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\render\d3d\d3d.h" />
-    <ClInclude Include="src\render\draw\draw.h" />
-    <ClInclude Include="src\render\math\color.h" />
-    <ClInclude Include="src\render\math\vector.h" />
-    <ClInclude Include="src\render\render.h" />
+    <ClInclude Include="src\engine\engine.h" />
+    <ClInclude Include="src\engine\render\floodgui\flood_gui.h" />
+    <ClInclude Include="src\engine\render\floodgui\flood_gui_draw.h" />
+    <ClInclude Include="src\engine\render\floodgui\flood_gui_input.h" />
+    <ClInclude Include="src\engine\render\floodgui\flood_gui_math.h" />
+    <ClInclude Include="src\engine\render\floodgui\flood_gui_win.h" />
+    <ClInclude Include="src\engine\render\math\matrix.h" />
+    <ClInclude Include="src\engine\render\math\mesh.h" />
+    <ClInclude Include="src\engine\render\render.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

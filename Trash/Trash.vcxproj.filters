@@ -18,27 +18,42 @@
     <ClCompile Include="Trash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render\d3d\d3d.cpp">
+    <ClCompile Include="src\engine\render\floodgui\flood_gui_draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render\draw\draw.cpp">
+    <ClCompile Include="src\engine\render\render.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\render\render.h">
+    <ClInclude Include="src\engine\render\floodgui\flood_gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render\draw\draw.h">
+    <ClInclude Include="src\engine\render\floodgui\flood_gui_draw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render\d3d\d3d.h">
+    <ClInclude Include="src\engine\render\floodgui\flood_gui_input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render\math\vector.h">
+    <ClInclude Include="src\engine\render\floodgui\flood_gui_math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render\math\color.h">
+    <ClInclude Include="src\engine\render\floodgui\flood_gui_win.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\render\render.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\render\math\mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\render\math\matrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
