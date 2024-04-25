@@ -4,6 +4,9 @@
 
 #include "math/mesh.h"
 
+#include <string>
+#include <chrono>
+
 FloodColor clearColor(1.f, 1.f, 1.f, 1.f);
 
 extern LRESULT CALLBACK FloodGuiWindowWinProcHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -37,7 +40,7 @@ void Window::CreateFlood() {
 	{
 		wc = { sizeof(wc), CS_CLASSDC, MainWindowProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"TrashClass", nullptr };
 		RegisterClassExW(&wc);
-		_hwnd = ::CreateWindowW(wc.lpszClassName, L"Trash", WS_OVERLAPPEDWINDOW, 0, 0, 800, 700, nullptr, nullptr, wc.hInstance, nullptr);
+		_hwnd = ::CreateWindowW(wc.lpszClassName, L"Trash", WS_OVERLAPPEDWINDOW, 0, 0, 1000, 700, nullptr, nullptr, wc.hInstance, nullptr);
 
 		// Initialize Direct3D
 		if (!CreateDeviceD3D())
@@ -69,13 +72,20 @@ void Window::RunAndAttachFlood(std::function<void()> handle) {
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) { TranslateMessage(&msg); DispatchMessage(&msg); if (msg.message == WM_QUIT) { CleanupDeviceD3D(); running = false; } }
 		if (!running)
 			break;
+		std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 
 		FloodGuiWinNewFrame();
 		FloodGuiD3D9NewFrame();
+		static std::chrono::duration<double> elapsed_seconds;
 
 		FloodGui::NewFrame();
 		{
+			unsigned int time = elapsed_seconds.count() * 1000;
+			if (time == 0)
+				time = 1;
 			handle();
+
+			FloodGui::Context.GetForegroundDrawList()->AddText((std::to_string(1000/time) + " FPS").c_str(), {50, 50}, FloodColor(1.f, 0.f, 0.f), 27);
 		}
 		FloodGui::EndFrame();
 		d3ddev->SetRenderState(D3DRS_ZENABLE, FALSE);
@@ -93,6 +103,8 @@ void Window::RunAndAttachFlood(std::function<void()> handle) {
 		}
 
 		HRESULT result = d3ddev->Present(nullptr, nullptr, nullptr, nullptr);
+		std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
+		elapsed_seconds = end - start;
 	}
 
 	FloodGuiD3D9Shutdown();
@@ -139,5 +151,5 @@ void Render::Begin(std::function<void()> handle) {
 }
 
 void Render::DrawTri(float x1, float y1, float x2, float y2, float x3, float y3) {
-	FloodGui::Context.GetForegroundDrawList()->AddPolyLine({ {x1, y1}, {x2, y2}, {x3, y3} }, FloodColor());
+	FloodGui::Context.GetBackgroundDrawList()->AddPolyLine({ {x1, y1}, {x2, y2}, {x3, y3} }, FloodColor());
 }
