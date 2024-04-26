@@ -2,7 +2,7 @@
 #include "floodgui/flood_gui.h"
 #include "floodgui/flood_gui_win.h"
 
-#include "math/mesh.h"
+#include "../math/mesh.h"
 
 #include <string>
 #include <chrono>

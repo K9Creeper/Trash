@@ -143,21 +143,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\camera\camera.cpp" />
     <ClCompile Include="src\engine\engine.cpp" />
     <ClCompile Include="src\engine\render\floodgui\flood_gui_draw.cpp" />
     <ClCompile Include="src\engine\render\render.cpp" />
     <ClCompile Include="Trash.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\camera\camera.h" />
     <ClInclude Include="src\engine\engine.h" />
+    <ClInclude Include="src\engine\math\vector.h" />
     <ClInclude Include="src\engine\render\floodgui\flood_gui.h" />
     <ClInclude Include="src\engine\render\floodgui\flood_gui_draw.h" />
     <ClInclude Include="src\engine\render\floodgui\flood_gui_input.h" />
     <ClInclude Include="src\engine\render\floodgui\flood_gui_math.h" />
     <ClInclude Include="src\engine\render\floodgui\flood_gui_win.h" />
-    <ClInclude Include="src\engine\render\math\matrix.h" />
-    <ClInclude Include="src\engine\render\math\mesh.h" />
+    <ClInclude Include="src\engine\math\matrix.h" />
+    <ClInclude Include="src\engine\math\mesh.h" />
     <ClInclude Include="src\engine\render\render.h" />
+    <ClInclude Include="src\engine\world.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

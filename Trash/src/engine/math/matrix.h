@@ -1,33 +1,6 @@
 #pragma once
-#include "../floodgui/flood_gui_math.h"
+#include "vector.h"
 #include <iostream>
-
-using Vector3 = FloodVector3;
-
-inline float Vector_DotProduct(const Vector3& v1, const Vector3& v2)
-{
-	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-}
-
-inline float Vector_Length(const Vector3& v)
-{
-	return sqrtf(Vector_DotProduct(v, v));
-}
-
-inline Vector3 Vector_Normalise(const Vector3& v)
-{
-	float l = Vector_Length(v);
-	return { v.x / l, v.y / l, v.z / l };
-}
-
-inline Vector3 Vector_CrossProduct(const Vector3& v1, const Vector3& v2)
-{
-	Vector3 v;
-	v.x = v1.y * v2.z - v1.z * v2.y;
-	v.y = v1.z * v2.x - v1.x * v2.z;
-	v.z = v1.x * v2.y - v1.y * v2.x;
-	return v;
-}
 
 struct Matrix4x4 {
 private:
@@ -90,10 +63,25 @@ public:
 		m[3][3] = 1.0f;
 	}
 
-	inline FloodVector3 MultiplyVector(const Vector3& i, float& w)
+	inline Vector3 MultiplyVector(const Vector3& i)
 	{
 		Vector3 o;
 		o.x = i.x * m[0][0] + i.y *m[1][0] + i.z * m[2][0] + m[3][0];
+		o.y = i.x * m[0][1] + i.y * m[1][1] + i.z * m[2][1] + m[3][1];
+		o.z = i.x * m[0][2] + i.y * m[1][2] + i.z * m[2][2] + m[3][2];
+		const float& w = i.x * m[0][3] + i.y * m[1][3] + i.z * m[2][3] + m[3][3];
+
+		if (w != 0.0f)
+		{
+			o.x /= w; o.y /= w; o.z /= w;
+		}
+		return o;
+	}
+
+	inline Vector3 MultiplyVectorW(const Vector3& i, float& w)
+	{
+		Vector3 o;
+		o.x = i.x * m[0][0] + i.y * m[1][0] + i.z * m[2][0] + m[3][0];
 		o.y = i.x * m[0][1] + i.y * m[1][1] + i.z * m[2][1] + m[3][1];
 		o.z = i.x * m[0][2] + i.y * m[1][2] + i.z * m[2][2] + m[3][2];
 		w = i.x * m[0][3] + i.y * m[1][3] + i.z * m[2][3] + m[3][3];
@@ -120,15 +108,15 @@ public:
 	{
 		// Calculate new forward direction
 		Vector3 newForward = (target - pos);
-		newForward = Vector_Normalise(newForward);
+		newForward.Normalise();
 
 		// Calculate new Up direction
-		Vector3 a = (newForward * Vector_DotProduct(up, newForward));
+		Vector3 a = (newForward * up.DotProduct(newForward));
 		Vector3 newUp = (up - a);
-		newUp = Vector_Normalise(newUp);
+		newUp.Normalise();
 
 		// New Right direction is easy, its just cross product
-		Vector3 newRight = Vector_CrossProduct(newUp, newForward);
+		Vector3 newRight = newUp.CrossProduct(newForward);
 
 		// Construct Dimensioning and Translation Matrix	
 		m[0][0] = newRight.x;	m[0][1] = newRight.y;	m[0][2] = newRight.z;	m[0][3] = 0.0f;

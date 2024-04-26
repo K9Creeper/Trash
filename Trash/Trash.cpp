@@ -1,5 +1,4 @@
 #include <Windows.h>
-#include <thread>
 
 #include "src/engine/engine.h"
 
