@@ -12,13 +12,17 @@ private:
 	Render* render;
 public:
 	Engine();
-	~Engine() { delete render; }
+	~Engine() {
+		delete render; delete pDepthBuffer;
+	}
 
 	void Start();
 
 	bool running = true;
 private:
 	FloodColor groundColor;
+
+	float* pDepthBuffer;
 public:
 	Camera camera;
 	World world;

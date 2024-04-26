@@ -17,12 +17,16 @@ bool ProjectionMatrix::WorldToScreen(const Triangle& in, Triangle& out) {
 	float w;
 	out.p[0] = matrix.MultiplyVectorW(in.p[0], w);
 	if (w < 0) return false;
-
 	out.p[1] = matrix.MultiplyVectorW(in.p[1], w);
 	if (w < 0) return false;
-
 	out.p[2] = matrix.MultiplyVectorW(in.p[2], w);
 	if (w < 0) return false;
+
+	out.z = (out.p[0].z + out.p[1].z + out.p[2].z) / 3.f;
+
+	out.t[0] = in.t[0];
+	out.t[1] = in.t[1];
+	out.t[2] = in.t[2];
 
 	return true;
 }

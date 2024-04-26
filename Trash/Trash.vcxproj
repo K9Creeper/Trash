@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="src\engine\camera\camera.h" />
     <ClInclude Include="src\engine\engine.h" />
+    <ClInclude Include="src\engine\gameobject\gameobject.h" />
     <ClInclude Include="src\engine\math\vector.h" />
     <ClInclude Include="src\engine\render\floodgui\flood_gui.h" />
     <ClInclude Include="src\engine\render\floodgui\flood_gui_draw.h" />

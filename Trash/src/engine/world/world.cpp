@@ -1,5 +1,5 @@
 #include "world.h"
 
-void World::AddMesh(const std::string& meshName, const Mesh& mesh) {
-	meshes[meshName] = mesh;
+void World::AddGameObject(const std::string& meshName, const GameObject& go) {
+	GameObjects[meshName] = go;
 }

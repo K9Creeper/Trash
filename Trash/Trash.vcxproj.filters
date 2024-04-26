@@ -71,5 +71,8 @@
     <ClInclude Include="src\engine\world\world.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\gameobject\gameobject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
