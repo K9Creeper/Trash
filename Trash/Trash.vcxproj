@@ -147,6 +147,7 @@
     <ClCompile Include="src\engine\engine.cpp" />
     <ClCompile Include="src\engine\render\floodgui\flood_gui_draw.cpp" />
     <ClCompile Include="src\engine\render\render.cpp" />
+    <ClCompile Include="src\engine\world\world.cpp" />
     <ClCompile Include="Trash.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -161,7 +162,7 @@
     <ClInclude Include="src\engine\math\matrix.h" />
     <ClInclude Include="src\engine\math\mesh.h" />
     <ClInclude Include="src\engine\render\render.h" />
-    <ClInclude Include="src\engine\world.h" />
+    <ClInclude Include="src\engine\world\world.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,6 +2,7 @@
 #include "math/mesh.h"
 #include "math/matrix.h"
 
+#include "world/world.h"
 #include "camera/camera.h"
 
 class Render;
@@ -17,12 +18,9 @@ public:
 
 	bool running = true;
 private:
-	Mesh meshCube;
-
-	Matrix4x4 matWorld;
-
 	FloodColor groundColor;
 public:
 	Camera camera;
+	World world;
 	void OnRender();
 };

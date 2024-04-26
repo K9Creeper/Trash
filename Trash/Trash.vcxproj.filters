@@ -30,6 +30,9 @@
     <ClCompile Include="src\engine\camera\camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\world\world.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\render\floodgui\flood_gui.h">
@@ -65,7 +68,7 @@
     <ClInclude Include="src\engine\math\vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\world.h">
+    <ClInclude Include="src\engine\world\world.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

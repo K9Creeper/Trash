@@ -39,8 +39,9 @@ void InputThread(Engine* engine)
 }
 
 void Engine::Start() {
-
-	meshCube.LoadFromObjectFile("mountains.obj");
+	Mesh ground;
+	if(ground.LoadFromObjectFile("mountains.obj"))
+		world.AddMesh("mountains.obj", ground);
 	
 	render->Init();
 	camera.Create(90.f);
@@ -74,11 +75,11 @@ void Engine::OnRender() {
 
 	// Create World Matrix and apply needed translations
 	{
-		matWorld.MakeIdentity();
+		world.matWorld.MakeIdentity();
 
 		Matrix4x4 matTrans; matTrans.MakeTranslation(0.0f, 0.0f, 0.0f);
 
-		matWorld.MultiplyMatrix(matWorld, matTrans);
+		world.matWorld.MultiplyMatrix(world.matWorld, matTrans);
 	}
 
 	// Setup/Update camera and view projection
@@ -89,14 +90,14 @@ void Engine::OnRender() {
 
 	static std::vector<Triangle> clipedTriangles{};
 	clipedTriangles.clear();
-
-	for (const Triangle& tri : meshCube.triangles)
+	for(const auto& [name, mesh] : world.getMeshes())
+	for (const Triangle& tri : mesh.triangles)
 	{
 		Triangle triProjected, triTransformed, triViewed;
 
-		triTransformed.p[0] = matWorld.MultiplyVector(tri.p[0]);
-		triTransformed.p[1] = matWorld.MultiplyVector(tri.p[1]);
-		triTransformed.p[2] = matWorld.MultiplyVector(tri.p[2]);
+		triTransformed.p[0] = world.matWorld.MultiplyVector(tri.p[0]);
+		triTransformed.p[1] = world.matWorld.MultiplyVector(tri.p[1]);
+		triTransformed.p[2] = world.matWorld.MultiplyVector(tri.p[2]);
 		
 		Vector3 line1 = (triTransformed.p[1] - triTransformed.p[0]);
 		const Vector3& line2 = (triTransformed.p[2] - triTransformed.p[0]);
@@ -104,11 +105,10 @@ void Engine::OnRender() {
 
 		if (normal.DotProduct((triTransformed.p[0] - camera.origin)) >= 0.0f)
 			continue;
-			
-		Vector3 light_direction = { 0.0f, 1.0f, 1.0f };
-		light_direction.Normalise();
 
-		float dp = max(0.1f, light_direction.DotProduct(normal));
+		Vector3 light_direction = { (float)world.light_directionx, (float)world.light_directiony , (float)world.light_directionz };
+
+		float dp = max(0.1f, light_direction.Normalise().DotProduct(normal));
 
 		triViewed.p[0] = camera.matView.MultiplyVector(triTransformed.p[0]);
 		triViewed.p[1] = camera.matView.MultiplyVector(triTransformed.p[1]);
@@ -198,9 +198,13 @@ void Engine::OnRender() {
 	{
 		// FloodGui has a slight issue
 		// Need to update FloodGui later!
-		FloodGui::BeginWindow("Camera Editer");
+		FloodGui::BeginWindow("Camera Editor");
 		
 		FloodGui::Color3Slider("Ground Color", groundColor.data());
+
+		FloodGui::IntSlider("Lighting X", &world.light_directionx, -10, 10);
+		FloodGui::IntSlider("Lighting Y", &world.light_directiony, -10, 10);
+		FloodGui::IntSlider("Lighting Z", &world.light_directionz, -10, 10);
 
 		FloodGui::EndWindow();
 	}
