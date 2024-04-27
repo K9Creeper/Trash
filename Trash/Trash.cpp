@@ -2,12 +2,6 @@
 
 #include "src/engine/engine.h"
 
-#ifdef _DEBUG
-int main() {
-    Engine engine;
-    engine.Start();
-}
-#else
 int CALLBACK WinMain(
     HINSTANCE   hInstance,
     HINSTANCE   hPrevInstance,
@@ -17,4 +11,3 @@ int CALLBACK WinMain(
     Engine engine;
     engine.Start();
 }
-#endif // !_DEBUG

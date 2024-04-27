@@ -41,8 +41,11 @@ void InputThread(Engine* engine)
 
 void Engine::Start() {
 	
-	if(Mesh cube; cube.LoadFromObjectFile("teapot.obj"))
-		world.AddEngineObject("teapot", EngineObject(cube, {0.f, 0.f, 0.f}));
+	if (Mesh cube; cube.LoadFromObjectFile("teapot.obj")) {
+		world.AddEngineObject("teapot1", EngineObject(cube, { 0.f, 0.f, 0.f }));
+		world.AddEngineObject("teapot2", EngineObject(cube, { 0.f, 30.f, 0.f }));
+	}
+
 
 	render->Init();
 
@@ -211,7 +214,7 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 	listlistTriangles->insert(listlistTriangles->end(), list.begin(), list.end());
 }
 
-void ProcessEngineObject(Engine* engine, EngineObject* obj, std::vector<Triangle>* listlistTriangles, bool* b, std::mutex* mutex) {
+void ProcessEngineObject(Engine* engine, EngineObject* obj, std::vector<Triangle>* listlistTriangles, std::mutex* mutex) {
 	size_t si = obj->worldmesh.triangles.size() / 2;
 
 	std::vector<Triangle> triangleIn1{ obj->worldmesh.triangles.begin(), obj->worldmesh.triangles.begin() + si };
@@ -222,9 +225,6 @@ void ProcessEngineObject(Engine* engine, EngineObject* obj, std::vector<Triangle
 
 	thread1.join();
 	thread2.join();
-
-	if (b)
-		*b = false;
 }
 
 void Engine::OnRender() {
@@ -250,15 +250,22 @@ void Engine::OnRender() {
 	std::unordered_map<std::string, EngineObject>& EngineObjects = world.getEngineObjects();
 
 	std::mutex mutex;
-	bool interupt = true;
+
+	std::vector<std::thread*>threads;
+	threads.reserve(EngineObjects.size());
 
 	for (auto& [name, Object] : EngineObjects) {
 		static int o = 0;
 		EngineObject* obj = &Object;
-		std::thread(ProcessEngineObject, this, obj, &listlistTriangles, (++o < EngineObjects.size() ? nullptr : &interupt), (std::mutex*)&mutex).detach();
+		std::thread* thread = new std::thread(ProcessEngineObject, this, obj, &listlistTriangles, (std::mutex*)&mutex);
+		threads.push_back(thread);
 	}
 
-	while (interupt && EngineObjects.size() > 0) { Sleep(0); }
+	for (int i = 0; i < threads.size(); i++) {
+		threads[i]->join();
+		delete threads[i];
+	}
+
 	/* 
 		MUST KEEP THIS
 	*/
