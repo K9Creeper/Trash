@@ -2,10 +2,10 @@
 
 #include "../math/mesh.h"
 
-class GameObject {
+class EngineObject {
 public:
-	GameObject(){}
-	GameObject(const Mesh& mesh, const Vector3& origin) {
+	EngineObject(){}
+	EngineObject(const Mesh& mesh, const Vector3& origin) {
 		this->omesh = mesh;
 		this->origin = origin;
 

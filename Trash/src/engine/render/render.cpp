@@ -74,6 +74,7 @@ void Window::RunAndAttachFlood(std::function<void()> handle) {
 			break;
 		std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 
+
 		FloodGuiWinNewFrame();
 		FloodGuiD3D9NewFrame();
 		static std::chrono::duration<double> elapsed_seconds;
@@ -84,7 +85,7 @@ void Window::RunAndAttachFlood(std::function<void()> handle) {
 			if (time == 0)
 				time = 1;
 			handle();
-
+			
 			FloodGui::Context.GetForegroundDrawList()->AddText((std::to_string(1000/time) + " FPS").c_str(), {50, 50}, FloodColor(1.f, 0.f, 0.f), 27);
 		}
 		FloodGui::EndFrame();

@@ -1,17 +1,17 @@
 #pragma once
 #include <unordered_map>
 
-#include "../gameobject/gameobject.h"
+#include "../EngineObject/EngineObject.h"
 
 class World {
 public:
 
 private:
-	std::unordered_map<std::string, GameObject>GameObjects{};
+	std::unordered_map<std::string, EngineObject>EngineObjects{};
 
 public:
-	void AddGameObject(const std::string& meshName, const GameObject& go);
-	std::unordered_map<std::string, GameObject>& getGameObjects() { return GameObjects; }
+	void AddEngineObject(const std::string& meshName, const EngineObject& go);
+	std::unordered_map<std::string, EngineObject>& getEngineObjects() { return EngineObjects; }
 	Matrix4x4 matWorld;
 	int light_directionx = 0;
 	int light_directiony = 1;
