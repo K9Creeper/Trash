@@ -67,6 +67,7 @@ void Window::CreateFlood() {
 }
 void Window::RunAndAttachFlood(std::function<void()> handle) {
 	MSG msg;
+	static std::chrono::duration<double> elapsed_seconds;
 
 	while (running) {
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) { TranslateMessage(&msg); DispatchMessage(&msg); if (msg.message == WM_QUIT) { CleanupDeviceD3D(); running = false; } }
@@ -77,16 +78,16 @@ void Window::RunAndAttachFlood(std::function<void()> handle) {
 
 		FloodGuiWinNewFrame();
 		FloodGuiD3D9NewFrame();
-		static std::chrono::duration<double> elapsed_seconds;
+		
 
 		FloodGui::NewFrame();
 		{
 			unsigned int time = elapsed_seconds.count() * 1000;
-			if (time == 0)
-				time = 1;
-			handle();
 			
-			FloodGui::Context.GetForegroundDrawList()->AddText((std::to_string(1000/time) + " FPS").c_str(), {50, 50}, FloodColor(1.f, 0.f, 0.f), 27);
+			handle();
+
+			if (time > 0)
+				FloodGui::Context.GetForegroundDrawList()->AddText((std::to_string(1000/time) + " FPS").c_str(), {50, 50}, FloodColor(1.f, 0.f, 0.f), 27);
 		}
 		FloodGui::EndFrame();
 		d3ddev->SetRenderState(D3DRS_ZENABLE, FALSE);
