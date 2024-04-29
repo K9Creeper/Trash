@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -151,6 +151,7 @@
     <ClCompile Include="src\engine\engine.cpp" />
     <ClCompile Include="src\engine\render\floodgui\flood_gui_draw.cpp" />
     <ClCompile Include="src\engine\render\render.cpp" />
+    <ClCompile Include="src\engine\trace\trace.cpp" />
     <ClCompile Include="src\engine\world\world.cpp" />
     <ClCompile Include="Trash.cpp" />
   </ItemGroup>
@@ -167,6 +168,7 @@
     <ClInclude Include="src\engine\math\matrix.h" />
     <ClInclude Include="src\engine\math\mesh.h" />
     <ClInclude Include="src\engine\render\render.h" />
+    <ClInclude Include="src\engine\trace\trace.h" />
     <ClInclude Include="src\engine\world\world.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

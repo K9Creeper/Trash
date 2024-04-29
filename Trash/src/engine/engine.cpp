@@ -41,9 +41,8 @@ void InputThread(Engine* engine)
 
 void Engine::Start() {
 	
-	if (Mesh cube; cube.LoadFromObjectFile("teapot.obj")) {
-		world.AddEngineObject("teapot1", EngineObject(cube, { 0.f, 0.f, 0.f }));
-		world.AddEngineObject("teapot2", EngineObject(cube, { 0.f, 30.f, 0.f }));
+	if (Mesh cube; cube.LoadFromObjectFile("mountains.obj")) {
+		world.AddEngineObject("ground", EngineObject(cube, { 0.f, 0.f, 0.f }));
 	}
 
 
@@ -72,18 +71,6 @@ void shadeColor(FloodColor& col, const float& perc)
 	col.r() *= perc;
 	col.b() *= perc;
 	col.g() *= perc;
-}
-
-void DrawPixel(const float& x, const float& y, FloodColor col) {
-	FloodGui::Context.GetBackgroundDrawList()->AddRectFilled({ x, y }, { x + 1, y + 1 }, col);
-}
-
-void TexturedTriangle(float* pDepthBuffer, const Triangle& tri)
-{
-	const int& height = FloodGui::Context.Display.DisplaySize.y;
-	const int& width = FloodGui::Context.Display.DisplaySize.x;
-
-	
 }
 
 float area(int x1, int y1, int x2, int y2, int x3, int y3)

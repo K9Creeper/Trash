@@ -74,5 +74,8 @@
     <ClInclude Include="src\engine\engineobject\engineobject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\trace\trace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
