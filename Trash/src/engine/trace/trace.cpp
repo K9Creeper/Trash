@@ -1,26 +1,68 @@
 #include "trace.h"
 
-// For struct Triangle
-#include "../math/mesh.h"
+// Engine
+#include "../engine.h"
 
-float GetDistance(vec v1, vec v2)
-{
-	if ((v1.x == 0) && (v2.x == 0) && (v1.y == 0) && (v2.y == 0) && (v1.z == 0) &&
-		(v2.z == 0))
-		return 0.0f;
+bool intersectTriangle(Trace<Triangle>* tr, Triangle* triangle) {
+    const float EPSILON = 0.0000001f;
 
-	return v1.dist(v2);
+    // Compute vectors for two edges of the triangle
+    Vector3 edge1 = triangle->p[1] - triangle->p[0];
+    Vector3 edge2 = triangle->p[2] - triangle->p[0];
+
+    // Compute determinant to check if the ray and triangle are parallel
+    Vector3 h = tr->direction.CrossProduct(edge2);
+    float a = edge1.DotProduct(h);
+
+    // Check if the ray is parallel to the triangle
+    if (a > -EPSILON && a < EPSILON) {
+        return false;
+    }
+
+    float f = 1.0f / a;
+    Vector3 s = tr->origin - triangle->p[0];
+    float u = f * s.DotProduct(h);
+
+    // Check if the intersection point is outside the triangle
+    if (u < 0.0f || u > 1.0f) {
+        return false;
+    }
+
+    Vector3 q = s.CrossProduct(edge1);
+    float v = f * tr->direction.DotProduct(q);
+
+    // Check if the intersection point is outside the triangle
+    if (v < 0.0f || u + v > 1.0f) {
+        return false;
+    }
+
+    float t = f * edge2.DotProduct(q);
+
+    // Check if the intersection point is behind the ray origin
+    if (t > EPSILON) {
+        // Intersection point found
+        tr->end = tr->origin + tr->direction * t;
+        return true;
+    }
+
+    return false;
 }
 
-void TraceLine(Trace<Triangle>* tr, std::vector<Triangle>& allTri) {
-	tr->collided = false;
-	tr->end = tr->origin;
-	static float flNearestDist, flDist;
+void Trace<Triangle>::TraceLine(Engine* engine,std::vector<Triangle*>& allTri) {
+	collided = false;
+	end = origin;
 
-	flNearestDist = 9999.99f;
-	for (const Triangle& tri : allTri) {
-		for (int i = 0; i < 3; i++) {
-			flDist = (tr->origin - tri.p[i]);
-		}
+    float flClose = 99999.99f;
+
+	for (Triangle* tri : allTri) {
+        if (intersectTriangle(this, tri))
+        {
+            float dst = ((Vector3)(origin - tri->findTriangleCenter())).Length();
+            if (dst < flClose) {
+                collided = true;
+                hit = *tri;
+                flClose = dst;
+            }
+        }
 	}
 }

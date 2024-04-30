@@ -17,6 +17,21 @@ struct Triangle {
 
 	float z;
 
+	Vector3 findTriangleCenter() {
+		Vector3 center;
+		center.x = (p[0].x + p[1].x + p[2].x) / 3.0f;
+		center.y = (p[0].y + p[1].y + p[2].y) / 3.0f;
+		center.z = (p[0].z + p[1].z + p[2].z) / 3.0f;
+		return center;
+	}
+
+	constexpr bool operator==(const Triangle& tri)const
+	{
+		return ((p[0].x == tri.p[0].x && p[1].x == tri.p[1].x && p[2].x == tri.p[2].x)
+			&& (p[0].y == tri.p[0].y && p[1].y == tri.p[1].y && p[2].y == tri.p[2].y) 
+			&& (p[0].z == tri.p[0].z && p[1].z == tri.p[1].z && p[2].z == tri.p[2].z));
+	}
+
 	int ClipAgainstPlane(Vector3 plane_p, Vector3 plane_n, Triangle& out_tri1, Triangle& out_tri2)
 	{
 		plane_n.Normalise();

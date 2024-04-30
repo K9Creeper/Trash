@@ -26,5 +26,6 @@ private:
 public:
 	Camera camera;
 	World world;
+
 	void OnRender();
 };

@@ -2,8 +2,11 @@
 #include "render/render.h"
 #include "render/floodgui/flood_gui.h"
 
+#include "trace/trace.h"
+
 #include <thread>
 #include <mutex>
+
 
 Engine::Engine() {
 	render = new Render();
@@ -14,27 +17,29 @@ void InputThread(Engine* engine)
 	while (engine->running)
 	{
 		Vector3 vForward = (engine->camera.lookDir * 8.0f * 0.05f);
+		Vector3 vRight = Vector3(vForward.z, 0, -vForward.x);
 
 		// Standard FPS Control scheme, but turn instead of strafe
 		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_W].raw_down)
-			engine->camera.origin = (engine->camera.origin + vForward);
+			engine->camera.origin = (engine->camera.origin + Vector3(vForward.x, 0, vForward.z));
 
 		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_S].raw_down)
-			engine->camera.origin = (engine->camera.origin - vForward);
+			engine->camera.origin = (engine->camera.origin - Vector3(vForward.x, 0, vForward.z));
 
 		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_A].raw_down) {
-			engine->camera.rotation.yaw -= 2.0f * 0.05f;
+			engine->camera.origin = (engine->camera.origin + vRight);
 		}
 		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_D].raw_down) {
-			engine->camera.rotation.yaw += 2.0f * 0.05f;
+			engine->camera.origin = (engine->camera.origin - vRight);
 		}
 
-		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_UpArrow].raw_down) {
-			engine->camera.rotation.pitch -= 2.0f * 0.05f;
+		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_Q].raw_down) {
+			engine->camera.origin.y += 2.0f;
 		}
-		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_DownArrow].raw_down) {
-			engine->camera.rotation.pitch += 2.0f * 0.05f;
+		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_E].raw_down) {
+			engine->camera.origin.y -= 2.0f;
 		}
+
 		Sleep(16);
 	}
 }
@@ -44,7 +49,8 @@ void Engine::Start() {
 	if (Mesh cube; cube.LoadFromObjectFile("mountains.obj")) {
 		world.AddEngineObject("ground", EngineObject(cube, { 0.f, 0.f, 0.f }));
 	}
-
+	
+	world.lightSources.push_back({ {0, 15, 0}, 999.9f});
 
 	render->Init();
 
@@ -52,7 +58,7 @@ void Engine::Start() {
 
 	std::thread it(InputThread, this);
 
-	groundColor = FloodColor(255, 255, 255, 255);
+	groundColor = FloodColor(255, 205, 255, 255);
 
 	render->Begin([&]() {
 		OnRender();
@@ -106,7 +112,8 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 
 	std::list<Triangle>list;
 
-	for (const Triangle& tri : *triangles) {
+	for (Triangle& tri : *triangles) {
+		static std::vector<Triangle*> allTris = engine->world.getAllTriangles();
 		Triangle triTransformed, triViewed;
 
 		// Transform triangle vertices
@@ -120,8 +127,10 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 		Vector3 line2 = triTransformed.p[2] - triTransformed.p[0];
 		Vector3 normal = line1.CrossProduct(line2).Normalise();
 
+		float n = normal.DotProduct(triTransformed.p[0] - engine->camera.origin);
+
 		// Check backface culling
-		if (normal.DotProduct(triTransformed.p[0] - engine->camera.origin) > 0.0f)
+		if (n > 0.0f)
 			continue;
 
 		// Transform triangle to camera view
@@ -130,12 +139,29 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 			triViewed.t[i] = triTransformed.t[i];
 		}
 
-		// Calculate shading
-		Vector3 light_direction = { (float)engine->world.light_directionx, (float)engine->world.light_directiony , (float)engine->world.light_directionz };
-		FloodColor col = FloodColor(255, 255, 255, 255);
-		shadeColor(col, max(0.1f, light_direction.Normalise().DotProduct(normal)));
-		triViewed.col = col;
+		// Calculate shading / shadowsish
+		for (LightSource& ls : engine->world.lightSources) {
+			static int n = 0;
+			FloodColor col = triViewed.col;
+			
+			col = FloodColor(50, 255, 255, 255);
+			//shadeColor(col, max(0.1f, direction.Normalise().DotProduct(normal)));
+			//if (col.r() > triViewed.col.r() || n == 0) {
+			Trace<Triangle> tr;
+			tr.collided = false;
+			tr.origin = engine->camera.origin;
+			tr.direction = engine->camera.lookDir;
+			//tr.direction.Normalise();
+			std::vector<Triangle*> allTris = engine->world.getAllTriangles();
+			tr.TraceLine(engine, allTris);
 
+			if (tr.collided && tri == tr.hit)
+				triViewed.col = FloodColor(255, 0, 0, 255);
+			else
+				triViewed.col = col;
+				//n++;
+			//}
+		}
 		// Clip triangle against near plane
 		Clipped clip;
 		clip.nClippedTriangles = triViewed.ClipAgainstPlane(Vector3{ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, clip.clipped[0], clip.clipped[1]);
@@ -203,7 +229,6 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 
 void ProcessEngineObject(Engine* engine, EngineObject* obj, std::vector<Triangle>* listlistTriangles, std::mutex* mutex) {
 	size_t si = obj->worldmesh.triangles.size() / 2;
-
 	std::vector<Triangle> triangleIn1{ obj->worldmesh.triangles.begin(), obj->worldmesh.triangles.begin() + si };
 	std::vector<Triangle> triangleIn2{ obj->worldmesh.triangles.begin() + si, obj->worldmesh.triangles.end() };
 
@@ -258,26 +283,15 @@ void Engine::OnRender() {
 	*/
 
 	sort(listlistTriangles.begin(), listlistTriangles.end(), [](Triangle& t1, Triangle& t2) { return (t1.z) > (t2.z); });
-
+		
 	for (const Triangle& tri : listlistTriangles)
 	{
+		
 		FloodGui::Context.GetBackgroundDrawList()->AddTriangleFilled({ tri.p[0].x, tri.p[0].y }, { tri.p[1].x, tri.p[1].y }, { tri.p[2].x, tri.p[2].y }, tri.col);
+		render->DrawTri( tri.p[0].x, tri.p[0].y, tri.p[1].x, tri.p[1].y, tri.p[2].x, tri.p[2].y);
 	}
 
 	FloodGui::Context.GetForegroundDrawList()->AddText((std::to_string(listlistTriangles.size()) + " triangles").c_str(), { 50, 150 }, FloodColor(255, 0, 0, 255), 20.f, 12.f);
 
 	listlistTriangles.clear();
-
-	{
-		// FloodGui has a slight issue
-		// Need to update FloodGui later!
-		FloodGui::BeginWindow("Enviorment Editor");
-		
-		FloodGui::IntSlider("Lighting X", &world.light_directionx, -10, 10);
-		FloodGui::IntSlider("Lighting Y", &world.light_directiony, -10, 10);
-		FloodGui::IntSlider("Lighting Z", &world.light_directionz, -10, 10);
-
-		FloodGui::EndWindow();
-	}
-	
 }
