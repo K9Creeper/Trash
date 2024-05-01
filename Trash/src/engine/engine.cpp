@@ -131,6 +131,7 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 		for (int i = 0; i < 3; ++i) {
 			triTransformed.p[i] = engine->world.matWorld.MultiplyVector(tri.p[i]);
 			triTransformed.t[i] = tri.t[i];
+			triTransformed.col = tri.col;
 		}
 
 		// triangle normal
@@ -141,32 +142,25 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 		float n = normal.DotProduct(triTransformed.p[0] - engine->camera.origin);
 
 		// Check backface culling
-		if (n > 0.0f)
+		if (n >= 0.0f)
 			continue;
 
 		// triangle to camera view
 		for (int i = 0; i < 3; ++i) {
 			triViewed.p[i] = engine->camera.matView.MultiplyVector(triTransformed.p[i]);
 			triViewed.t[i] = triTransformed.t[i];
+			triViewed.col = triTransformed.col;
 		}
 
 		// shading / shadowsish
 		for (LightSource& ls : engine->world.lightSources) {
 			FloodColor col = FloodColor(255, 255, 255, 255);
 
-			Trace<Triangle> tr;
-			tr.collided = false;
-			tr.origin = ls.origin;
-			tr.direction = tri.findTriangleCenter() - tr.origin;
-			tr.direction.Normalise();
-			if(raytracing)
-			tr.TraceLine(engine, allTris);
+			Vector3 direction = ls.origin - tri.findTriangleCenter();
+			direction.Normalise();
 			
-			bool hit = tr.collided && tri == tr.hit;
-			if (!raytracing || hit) {
-				Vector3 direc = tr.origin - tri.findTriangleCenter();
-				direc.Normalise();
-				shadeColor(col, max(0.1f, direc.Normalise().DotProduct(normal)));
+			if (((Vector3)(tri.findTriangleCenter() - ls.origin)).Length() <= ls.strenghRad ) {
+				shadeColor(col, max(0.1f, direction.DotProduct(normal)));
 
 				if (col.r() > triViewed.col.r() && col.g() > triViewed.col.b() && col.g() > triViewed.col.g())
 				{
@@ -210,7 +204,10 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 				pointOnScreen(clip.finish.p[1].x, clip.finish.p[1].y) ||
 				pointOnScreen(clip.finish.p[2].x, clip.finish.p[2].y);
 
-			if (clip.valid) {
+			if (!clip.valid)
+				continue;
+
+			{
 				// Clip against screen edges
 				Triangle clipped[2];
 				std::list<Triangle> listTriangles;
@@ -226,10 +223,10 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 						--nNewTriangles;
 
 						switch (p) {
-						case 0: nTrisToAdd = test.ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, clipped[0], clipped[1]); break;
-						case 1: nTrisToAdd = test.ClipAgainstPlane({ 0.0f, (float)height - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, clipped[0], clipped[1]); break;
-						case 2: nTrisToAdd = test.ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, clipped[0], clipped[1]); break;
-						case 3: nTrisToAdd = test.ClipAgainstPlane({ (float)width - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, clipped[0], clipped[1]); break;
+							case 0: nTrisToAdd = test.ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, clipped[0], clipped[1]); break;
+							case 1: nTrisToAdd = test.ClipAgainstPlane({ 0.0f, (float)height - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, clipped[0], clipped[1]); break;
+							case 2: nTrisToAdd = test.ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, clipped[0], clipped[1]); break;
+							case 3: nTrisToAdd = test.ClipAgainstPlane({ (float)width - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, clipped[0], clipped[1]); break;
 						}
 
 						for (int w = 0; w < nTrisToAdd; ++w)
@@ -281,7 +278,7 @@ void Engine::OnRender() {
 	static std::vector<Triangle> listlistTriangles;
 	std::unordered_map<std::string, EngineObject>& EngineObjects = world.getEngineObjects();
 
-	std::mutex mutex;
+	static std::mutex mutex;
 
 	std::vector<std::thread*>threads;
 	threads.reserve(EngineObjects.size());
@@ -300,8 +297,9 @@ void Engine::OnRender() {
 	/* 
 		MUST KEEP THIS
 	*/
-
-	sort(listlistTriangles.begin(), listlistTriangles.end(), [](const Triangle& t1, const Triangle& t2) { return (t1.z) > (t2.z); });
+	
+	// PUT FRONT TO BACK SORTING ALGO
+	// HERE
 		
 	for (const Triangle& tri : listlistTriangles)
 	{
