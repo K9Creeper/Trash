@@ -17,6 +17,8 @@ struct Triangle {
 
 	float z;
 
+	uint64_t id;
+
 	Vector3 findTriangleCenter() {
 		Vector3 center;
 		center.x = (p[0].x + p[1].x + p[2].x) / 3.0f;
@@ -27,9 +29,7 @@ struct Triangle {
 
 	constexpr bool operator==(const Triangle& tri)const
 	{
-		return ((p[0].x == tri.p[0].x && p[1].x == tri.p[1].x && p[2].x == tri.p[2].x)
-			&& (p[0].y == tri.p[0].y && p[1].y == tri.p[1].y && p[2].y == tri.p[2].y) 
-			&& (p[0].z == tri.p[0].z && p[1].z == tri.p[1].z && p[2].z == tri.p[2].z));
+		return tri.id == id;
 	}
 
 	int ClipAgainstPlane(Vector3 plane_p, Vector3 plane_n, Triangle& out_tri1, Triangle& out_tri2)
@@ -117,6 +117,14 @@ struct Triangle {
 
 struct Mesh {
 	std::vector<Triangle>triangles;
+
+	std::vector<Triangle*>ptrTriangles;
+
+	void popPtrTri() {
+		ptrTriangles.reserve(triangles.size());
+		for (int i = 0; i < triangles.size(); i++)
+			ptrTriangles.push_back(&triangles[i]);
+	}
 
 	bool LoadFromObjectFile(std::string sFilename, bool bHasTexture = false)
 	{

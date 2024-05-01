@@ -1,11 +1,14 @@
 #include "world.h"
 
-void World::AddEngineObject(const std::string& meshName, const EngineObject& go) {
+bool World::AddEngineObject(const std::string& meshName, const EngineObject& go) {
+	if (EngineObjects.find(meshName) == EngineObjects.end())
+		return false;
 	EngineObjects[meshName] = go;
 
-	AllTriangle.clear();
-	for (auto& [name, obj] : EngineObjects) {
-		for(int i = 0; i < obj.worldmesh.triangles.size(); i++)
-			AllTriangle.push_back(&obj.worldmesh.triangles[i]);
+	for (int i = 0; i < go.worldmesh.ptrTriangles.size(); i++)
+	{
+		go.worldmesh.ptrTriangles[i]->id = std::hash< std::string>{}(meshName)+i;
+		AllTriangle.push_back(go.worldmesh.ptrTriangles[i]);
 	}
+	return true;
 }

@@ -40,13 +40,21 @@ void InputThread(Engine* engine)
 			engine->camera.origin.y -= 2.0f;
 		}
 
+		if (FloodGui::Context.IO.MouseInput[FloodGuiButton_LeftMouse])
+		{
+			engine->camera.rotation.yaw += .05f;
+		}
+		if (FloodGui::Context.IO.MouseInput[FloodGuiButton_RightMouse])
+		{
+			engine->camera.rotation.yaw -= .05f;
+		}
 		Sleep(16);
 	}
 }
 
 void Engine::Start() {
-	
-	if (Mesh cube; cube.LoadFromObjectFile("mountains.obj")) {
+	Mesh cube;
+	if (cube.LoadFromObjectFile("mountains.obj")) {
 		world.AddEngineObject("ground", EngineObject(cube, { 0.f, 0.f, 0.f }));
 	}
 	
@@ -97,7 +105,7 @@ bool isInside(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y)
 	return (A == A1 + A2 + A3);
 }
 
-void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vector<Triangle>* listlistTriangles, std::mutex* mutex)
+void ProcessTriangles(Engine* engine, std::vector<Triangle*>* ptrTriangles, std::vector<Triangle>* triangles, std::vector<Triangle>* listlistTriangles, std::mutex* mutex)
 {
 	const float& height = FloodGui::Context.Display.DisplaySize.y;
 	const float& width = FloodGui::Context.Display.DisplaySize.x;
@@ -110,10 +118,11 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 		Triangle finish;
 	};
 
-	std::list<Triangle>list;
+	std::vector<Triangle*> allTris = engine->world.getAllTriangles();
 
-	for (Triangle& tri : *triangles) {
-		static std::vector<Triangle*> allTris = engine->world.getAllTriangles();
+	std::list<Triangle>list;
+	for (int jj = 0; jj < triangles->size(); jj++) {
+		Triangle& tri = (*triangles)[jj];
 		Triangle triTransformed, triViewed;
 
 		// Transform triangle vertices
@@ -143,7 +152,7 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 		for (LightSource& ls : engine->world.lightSources) {
 			static int n = 0;
 			FloodColor col = triViewed.col;
-			
+
 			col = FloodColor(50, 255, 255, 255);
 			//shadeColor(col, max(0.1f, direction.Normalise().DotProduct(normal)));
 			//if (col.r() > triViewed.col.r() || n == 0) {
@@ -154,14 +163,15 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 			//tr.direction.Normalise();
 			std::vector<Triangle*> allTris = engine->world.getAllTriangles();
 			tr.TraceLine(engine, allTris);
-
+			
 			if (tr.collided && tri == tr.hit)
 				triViewed.col = FloodColor(255, 0, 0, 255);
 			else
 				triViewed.col = col;
-				//n++;
-			//}
+			//n++;
+		//}
 		}
+
 		// Clip triangle against near plane
 		Clipped clip;
 		clip.nClippedTriangles = triViewed.ClipAgainstPlane(Vector3{ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, clip.clipped[0], clip.clipped[1]);
@@ -228,12 +238,15 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 }
 
 void ProcessEngineObject(Engine* engine, EngineObject* obj, std::vector<Triangle>* listlistTriangles, std::mutex* mutex) {
-	size_t si = obj->worldmesh.triangles.size() / 2;
+	size_t si = obj->worldmesh.ptrTriangles.size() / 2;
+	std::vector<Triangle*> ptriangleIn1{ obj->worldmesh.ptrTriangles.begin(), obj->worldmesh.ptrTriangles.begin() + si };
+	std::vector<Triangle*> ptriangleIn2{ obj->worldmesh.ptrTriangles.begin() + si, obj->worldmesh.ptrTriangles.end() };
+
 	std::vector<Triangle> triangleIn1{ obj->worldmesh.triangles.begin(), obj->worldmesh.triangles.begin() + si };
 	std::vector<Triangle> triangleIn2{ obj->worldmesh.triangles.begin() + si, obj->worldmesh.triangles.end() };
 
-	std::thread thread1(ProcessTriangles, engine, &triangleIn1, listlistTriangles, mutex);
-	std::thread thread2(ProcessTriangles, engine, &triangleIn2, listlistTriangles, mutex);
+	std::thread thread1(ProcessTriangles, engine, &ptriangleIn1, &triangleIn1, listlistTriangles, mutex);
+	std::thread thread2(ProcessTriangles, engine, &ptriangleIn2, &triangleIn2, listlistTriangles, mutex);
 
 	thread1.join();
 	thread2.join();

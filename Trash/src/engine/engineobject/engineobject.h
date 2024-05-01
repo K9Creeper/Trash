@@ -9,7 +9,6 @@ public:
 		this->omesh = mesh;
 		this->origin = origin;
 
-
 		for (Triangle& t : omesh.triangles) {
 			Triangle tt;
 			tt.p[0] = t.p[0] + origin; 
@@ -19,12 +18,15 @@ public:
 			tt.t[0] = t.t[0];
 			tt.t[1] = t.t[1];
 			tt.t[2] = t.t[2];
+
+			
 			worldmesh.triangles.push_back(tt);
 		}
+		worldmesh.popPtrTri();
 	}
 private:
 	Mesh omesh;
-	
+	std::string meshName;
 public:
 	Vector3 origin;
 	Mesh worldmesh;

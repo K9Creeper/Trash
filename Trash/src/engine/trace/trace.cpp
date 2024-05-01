@@ -6,15 +6,14 @@
 bool intersectTriangle(Trace<Triangle>* tr, Triangle* triangle) {
     const float EPSILON = 0.0000001f;
 
-    // Compute vectors for two edges of the triangle
+    //  two edges of the triangle
     Vector3 edge1 = triangle->p[1] - triangle->p[0];
     Vector3 edge2 = triangle->p[2] - triangle->p[0];
 
-    // Compute determinant to check if the ray and triangle are parallel
     Vector3 h = tr->direction.CrossProduct(edge2);
     float a = edge1.DotProduct(h);
 
-    // Check if the ray is parallel to the triangle
+    // parallel to the triangle
     if (a > -EPSILON && a < EPSILON) {
         return false;
     }
@@ -23,7 +22,7 @@ bool intersectTriangle(Trace<Triangle>* tr, Triangle* triangle) {
     Vector3 s = tr->origin - triangle->p[0];
     float u = f * s.DotProduct(h);
 
-    // Check if the intersection point is outside the triangle
+    //  intersection point is outside the triangle
     if (u < 0.0f || u > 1.0f) {
         return false;
     }
@@ -31,16 +30,16 @@ bool intersectTriangle(Trace<Triangle>* tr, Triangle* triangle) {
     Vector3 q = s.CrossProduct(edge1);
     float v = f * tr->direction.DotProduct(q);
 
-    // Check if the intersection point is outside the triangle
+    //  intersection point is outside the triangle
     if (v < 0.0f || u + v > 1.0f) {
         return false;
     }
 
     float t = f * edge2.DotProduct(q);
 
-    // Check if the intersection point is behind the ray origin
+    // intersection point is behind the ray origin
     if (t > EPSILON) {
-        // Intersection point found
+        // point found
         tr->end = tr->origin + tr->direction * t;
         return true;
     }
