@@ -58,7 +58,7 @@ void Engine::Start() {
 		world.AddEngineObject("ground", EngineObject(cube, { 0.f, 0.f, 0.f }));
 	}
 	
-	world.lightSources.push_back({ {0, 15, 0}, 999.9f});
+	world.lightSources.push_back({ {0, 100, 0}, 999.9f});
 
 	render->Init();
 
@@ -131,7 +131,7 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 			triTransformed.t[i] = tri.t[i];
 		}
 
-		// Calculate triangle normal
+		// triangle normal
 		Vector3 line1 = triTransformed.p[1] - triTransformed.p[0];
 		Vector3 line2 = triTransformed.p[2] - triTransformed.p[0];
 		Vector3 normal = line1.CrossProduct(line2).Normalise();
@@ -142,33 +142,33 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 		if (n > 0.0f)
 			continue;
 
-		// Transform triangle to camera view
+		// triangle to camera view
 		for (int i = 0; i < 3; ++i) {
 			triViewed.p[i] = engine->camera.matView.MultiplyVector(triTransformed.p[i]);
 			triViewed.t[i] = triTransformed.t[i];
 		}
 
-		// Calculate shading / shadowsish
+		// shading / shadowsish
 		for (LightSource& ls : engine->world.lightSources) {
-			static int n = 0;
-			FloodColor col = triViewed.col;
+			FloodColor col = FloodColor(255, 255, 255, 255);
 
-			col = FloodColor(50, 255, 255, 255);
-			//shadeColor(col, max(0.1f, direction.Normalise().DotProduct(normal)));
-			//if (col.r() > triViewed.col.r() || n == 0) {
 			Trace<Triangle> tr;
 			tr.collided = false;
-			tr.origin = engine->camera.origin;
-			tr.direction = engine->camera.lookDir;
-			//tr.direction.Normalise();
+			tr.origin = ls.origin;
+			tr.direction = tri.findTriangleCenter() - tr.origin;
+			tr.direction.Normalise();
 			tr.TraceLine(engine, allTris);
 			
-			if (tr.collided && tri == tr.hit)
-				triViewed.col = FloodColor(255, 0, 0, 255);
-			else
-				triViewed.col = col;
-			//n++;
-		//}
+			bool hit = tr.collided && tri == tr.hit;
+			if (hit) {
+				
+				shadeColor(col, max(0.1f, tr.direction.Normalise().DotProduct(normal)));
+
+				if (col.r() > triViewed.col.r() && col.g() > triViewed.col.b() && col.g() > triViewed.col.g())
+				{
+					triViewed.col = col;
+				}
+			}
 		}
 
 		// Clip triangle against near plane
