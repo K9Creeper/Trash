@@ -20,8 +20,7 @@ private:
 
 	bool running = true;
 
-	bool lockMouse = true;
-	bool hideMouse = true;
+	
 public:
 	void CreateFlood();
 	void RunAndAttachFlood(std::function<void()> handle);
@@ -29,6 +28,9 @@ public:
 	LPDIRECT3DDEVICE9 getD3DDev() { return d3ddev; }
 
 	HWND _hwnd;
+
+	bool lockMouse = true;
+	bool hideMouse = true;
 
 	bool& setMouseLock(const bool& b) { lockMouse = b; return lockMouse; }
 	bool& setMouseHide(const bool& b) { hideMouse = b; return hideMouse; }
@@ -43,7 +45,7 @@ public:
 	void Init();
 	void Begin(std::function<void()> handle);
 
-	void DrawTri(float x1, float y1, float x2, float y2, float x3, float y3);
+	void DrawPixel(float x1, float y1, FloodColor col);
 
 	Window* getWindow() { return window; }
 };

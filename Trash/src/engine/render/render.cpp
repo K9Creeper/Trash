@@ -9,6 +9,10 @@
 
 FloodColor clearColor(1.f, 1.f, 1.f, 1.f);
 
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
+
+
 extern LRESULT CALLBACK FloodGuiWindowWinProcHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -39,7 +43,7 @@ void Window::CreateFlood() {
 	{
 		wc = { sizeof(wc), CS_CLASSDC, MainWindowProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"TrashClass", nullptr };
 		RegisterClassExW(&wc);
-		_hwnd = ::CreateWindowW(wc.lpszClassName, L"Trash", WS_OVERLAPPEDWINDOW, 0, 0, 1000, 700, nullptr, nullptr, wc.hInstance, nullptr);
+		_hwnd = ::CreateWindowW(wc.lpszClassName, L"Trash", WS_OVERLAPPEDWINDOW, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, nullptr, nullptr, wc.hInstance, nullptr);
 
 		// Initialize Direct3D
 		if (!CreateDeviceD3D())
@@ -79,9 +83,6 @@ void Window::RunAndAttachFlood(std::function<void()> handle) {
 		{
 			if (GetForegroundWindow() == _hwnd)
 			{
-				/// Then we are in the window and can apply lock and hide mouse
-				if (lockMouse)
-					SetCursorPos(FloodGui::Context.Display.DisplayPosition.x+ FloodGui::Context.Display.DisplaySize.x/2.f, FloodGui::Context.Display.DisplayPosition.y + FloodGui::Context.Display.DisplaySize.y / 2.f);
 				ShowCursor(!hideMouse);
 			}
 
@@ -123,9 +124,10 @@ bool Window::CreateDeviceD3D()
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
 	d3dpp.Windowed = TRUE;
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN; // Need to use an explicit format with alpha if needing per-pixel alpha composition.
+	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
 	d3dpp.EnableAutoDepthStencil = TRUE;
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+	d3dpp.BackBufferCount = 1;
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;           // Present with vsync
 	//d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;   // Present without vsync, maximum unthrottled framerate
 	if (d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, _hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &d3ddev) < 0)
@@ -150,6 +152,6 @@ void Render::Begin(std::function<void()> handle) {
 	window->RunAndAttachFlood(handle);
 }
 
-void Render::DrawTri(float x1, float y1, float x2, float y2, float x3, float y3) {
-	FloodGui::Context.GetBackgroundDrawList()->AddPolyLine({ {x1, y1}, {x2, y2}, {x3, y3} }, FloodColor());
+void Render::DrawPixel(float x1, float y1, FloodColor col) {
+	FloodGui::Context.GetBackgroundDrawList()->AddPolyLine({ {x1, y1}, {x1, y1} }, col);
 }

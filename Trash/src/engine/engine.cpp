@@ -49,6 +49,9 @@ void InputThread(Engine* engine)
 			diff.y -= 0.5; // For some reason it always seems to be .5 at all times??
 			engine->camera.rotation.pitch -= diff.y * .015f;
 			engine->camera.rotation.yaw -= diff.x * .015f;
+
+			if (engine->render->getWindow()->lockMouse)
+				SetCursorPos(FloodGui::Context.Display.DisplayPosition.x + FloodGui::Context.Display.DisplaySize.x / 2.f, FloodGui::Context.Display.DisplayPosition.y + FloodGui::Context.Display.DisplaySize.y / 2.f);
 		}
 		Sleep(16);
 	}
@@ -142,7 +145,7 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 		float n = normal.DotProduct(triTransformed.p[0] - engine->camera.origin);
 
 		// Check backface culling
-		if (n >= 0.0f)
+		if (n > 0.0f)
 			continue;
 
 		// triangle to camera view
@@ -211,7 +214,7 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 				// Clip against screen edges
 				Triangle clipped[2];
 				std::list<Triangle> listTriangles;
-
+				clip.finish.z = (clip.finish.p[0].z + clip.finish.p[1].z + clip.finish.p[2].z) / 3.0f;
 				listTriangles.push_back(clip.finish);
 				int nNewTriangles = 1;
 
@@ -229,8 +232,10 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 							case 3: nTrisToAdd = test.ClipAgainstPlane({ (float)width - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, clipped[0], clipped[1]); break;
 						}
 
-						for (int w = 0; w < nTrisToAdd; ++w)
+						for (int w = 0; w < nTrisToAdd; ++w) {
+							clipped[w].z = (clipped[w].p[0].z + clipped[w].p[1].z + clipped[w].p[2].z) / 3.0f;
 							listTriangles.push_back(clipped[w]);
+						}
 					}
 					nNewTriangles = listTriangles.size();
 				}
@@ -301,6 +306,10 @@ void Engine::OnRender() {
 	// PUT FRONT TO BACK SORTING ALGO
 	// HERE
 		
+	sort(listlistTriangles.begin(), listlistTriangles.end(), [](Triangle& tri, Triangle& tri2) {
+		return tri.z > tri2.z;
+	});
+
 	for (const Triangle& tri : listlistTriangles)
 	{
 		FloodGui::Context.GetBackgroundDrawList()->AddTriangleFilled({ tri.p[0].x, tri.p[0].y }, { tri.p[1].x, tri.p[1].y }, { tri.p[2].x, tri.p[2].y }, tri.col);
