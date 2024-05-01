@@ -7,13 +7,11 @@
 
 class Render;
 
-class Engine {
-private:
-	Render* render;
+class Engine {	
 public:
 	Engine();
 	~Engine() {
-		delete render; delete pDepthBuffer;
+		delete render;
 	}
 
 	void Start();
@@ -22,10 +20,11 @@ public:
 private:
 	FloodColor groundColor;
 
-	float* pDepthBuffer;
 public:
 	Camera camera;
 	World world;
+
+	Render* render;
 
 	void OnRender();
 };

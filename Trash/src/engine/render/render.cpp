@@ -20,7 +20,6 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 	{
 	case WM_PAINT:
 	{
-
 		break;
 	}
 	case WM_DESTROY:
@@ -67,27 +66,28 @@ void Window::CreateFlood() {
 }
 void Window::RunAndAttachFlood(std::function<void()> handle) {
 	MSG msg;
-	static std::chrono::duration<double> elapsed_seconds;
 
 	while (running) {
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) { TranslateMessage(&msg); DispatchMessage(&msg); if (msg.message == WM_QUIT) { CleanupDeviceD3D(); running = false; } }
 		if (!running)
 			break;
-		std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
-
 
 		FloodGuiWinNewFrame();
 		FloodGuiD3D9NewFrame();
-		
 
 		FloodGui::NewFrame();
 		{
-			unsigned int time = elapsed_seconds.count() * 1000;
-			
-			handle();
+			if (GetForegroundWindow() == _hwnd)
+			{
+				/// Then we are in the window and can apply lock and hide mouse
+				if (lockMouse)
+					SetCursorPos(FloodGui::Context.Display.DisplayPosition.x+ FloodGui::Context.Display.DisplaySize.x/2.f, FloodGui::Context.Display.DisplayPosition.y + FloodGui::Context.Display.DisplaySize.y / 2.f);
+				ShowCursor(!hideMouse);
+			}
 
-			if (time > 0)
-				FloodGui::Context.GetForegroundDrawList()->AddText((std::to_string(1000/time) + " FPS").c_str(), {50, 50}, FloodColor(1.f, 0.f, 0.f), 27);
+			handle();
+			
+			FloodGui::Context.GetForegroundDrawList()->AddText((std::to_string(FloodGui::Context.FrameData.CalculateFPS()) + " FPS").c_str(), {50, 50}, FloodColor(1.f, 0.f, 0.f), 27);
 		}
 		FloodGui::EndFrame();
 		d3ddev->SetRenderState(D3DRS_ZENABLE, FALSE);
@@ -105,8 +105,6 @@ void Window::RunAndAttachFlood(std::function<void()> handle) {
 		}
 
 		HRESULT result = d3ddev->Present(nullptr, nullptr, nullptr, nullptr);
-		std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
-		elapsed_seconds = end - start;
 	}
 
 	FloodGuiD3D9Shutdown();
@@ -129,7 +127,7 @@ bool Window::CreateDeviceD3D()
 	d3dpp.EnableAutoDepthStencil = TRUE;
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;           // Present with vsync
-	//g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;   // Present without vsync, maximum unthrottled framerate
+	//d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;   // Present without vsync, maximum unthrottled framerate
 	if (d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, _hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &d3ddev) < 0)
 		return false;
 

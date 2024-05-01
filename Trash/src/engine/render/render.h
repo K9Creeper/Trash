@@ -13,18 +13,26 @@ private:
 	LPDIRECT3DDEVICE9 d3ddev;
 	D3DPRESENT_PARAMETERS d3dpp;
 
-	HWND _hwnd;
 	WNDCLASSEXW wc;
 
 	bool CreateDeviceD3D();
 	void CleanupDeviceD3D();
 
 	bool running = true;
+
+	bool lockMouse = true;
+	bool hideMouse = true;
 public:
 	void CreateFlood();
 	void RunAndAttachFlood(std::function<void()> handle);
 	void Destroy() { running = false; }
 	LPDIRECT3DDEVICE9 getD3DDev() { return d3ddev; }
+
+	HWND _hwnd;
+
+	bool& setMouseLock(const bool& b) { lockMouse = b; return lockMouse; }
+	bool& setMouseHide(const bool& b) { hideMouse = b; return hideMouse; }
+
 };
 
 class Render {

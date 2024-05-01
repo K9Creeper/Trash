@@ -8,6 +8,8 @@
 #include <mutex>
 
 
+bool raytracing = false;
+
 Engine::Engine() {
 	render = new Render();
 }
@@ -16,7 +18,7 @@ void InputThread(Engine* engine)
 {
 	while (engine->running)
 	{
-		Vector3 vForward = (engine->camera.lookDir * 8.0f * 0.05f);
+		Vector3 vForward = (engine->camera.lookDir * 8.0f * 0.09f);
 		Vector3 vRight = Vector3(vForward.z, 0, -vForward.x);
 
 		// Standard FPS Control scheme, but turn instead of strafe
@@ -40,13 +42,13 @@ void InputThread(Engine* engine)
 			engine->camera.origin.y -= 2.0f;
 		}
 
-		if (FloodGui::Context.IO.MouseInput[FloodGuiButton_LeftMouse])
-		{
-			engine->camera.rotation.yaw += .05f;
-		}
-		if (FloodGui::Context.IO.MouseInput[FloodGuiButton_RightMouse])
-		{
-			engine->camera.rotation.yaw -= .05f;
+		static POINT p;
+		if (engine->render->getWindow()->_hwnd == GetForegroundWindow()) {
+			GetCursorPos(&p);
+			FloodVector2 diff = FloodVector2(FloodGui::Context.Display.DisplayPosition.x + FloodGui::Context.Display.DisplaySize.x / 2.f, FloodGui::Context.Display.DisplayPosition.y + FloodGui::Context.Display.DisplaySize.y / 2.f) - FloodVector2(p.x, p.y);
+			diff.y -= 0.5; // For some reason it always seems to be .5 at all times??
+			engine->camera.rotation.pitch -= diff.y * .015f;
+			engine->camera.rotation.yaw -= diff.x * .015f;
 		}
 		Sleep(16);
 	}
@@ -157,12 +159,14 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 			tr.origin = ls.origin;
 			tr.direction = tri.findTriangleCenter() - tr.origin;
 			tr.direction.Normalise();
+			if(raytracing)
 			tr.TraceLine(engine, allTris);
 			
 			bool hit = tr.collided && tri == tr.hit;
-			if (hit) {
-				
-				shadeColor(col, max(0.1f, tr.direction.Normalise().DotProduct(normal)));
+			if (!raytracing || hit) {
+				Vector3 direc = tr.origin - tri.findTriangleCenter();
+				direc.Normalise();
+				shadeColor(col, max(0.1f, direc.Normalise().DotProduct(normal)));
 
 				if (col.r() > triViewed.col.r() && col.g() > triViewed.col.b() && col.g() > triViewed.col.g())
 				{
@@ -183,18 +187,24 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 			clip.finish.col = clip.clipped[n].col;
 
 			// Perform viewport transformation
-			for (int i = 0; i < 3; ++i) {
-				clip.finish.t[i] = clip.clipped[n].t[i];
-				clip.finish.t[i].x /= clip.finish.p[i].z;
-				clip.finish.t[i].y /= clip.finish.p[i].z;
-				clip.finish.t[i].z = 1.0f / clip.finish.p[i].z;
-				clip.finish.p[i].x *= -1.0f;
-				clip.finish.p[i].y *= -1.0f;
-				clip.finish.p[i] = clip.finish.p[i] + Vector3{ 1.0f, 1.0f, 0.0f };
-				clip.finish.p[i].x *= 0.5f * (float)width;
-				clip.finish.p[i].y *= 0.5f * (float)height;
-			}
+			clip.finish.p[0].x *= -1.0f;
+			clip.finish.p[1].x *= -1.0f;
+			clip.finish.p[2].x *= -1.0f;
+			clip.finish.p[0].y *= -1.0f;
+			clip.finish.p[1].y *= -1.0f;
+			clip.finish.p[2].y *= -1.0f;
 
+			// Offset verts into visible normalised space
+			static Vector3 vOffsetView = { 1,1,0 };
+			clip.finish.p[0] = (clip.finish.p[0] + vOffsetView);
+			clip.finish.p[1] = (clip.finish.p[1] + vOffsetView);
+			clip.finish.p[2] = (clip.finish.p[2] + vOffsetView);
+			clip.finish.p[0].x *= 0.5f * (float)width;
+			clip.finish.p[0].y *= 0.5f * (float)height;
+			clip.finish.p[1].x *= 0.5f * (float)width;
+			clip.finish.p[1].y *= 0.5f * (float)height;
+			clip.finish.p[2].x *= 0.5f * (float)width;
+			clip.finish.p[2].y *= 0.5f * (float)height;
 			// Check if triangle is on screen
 			clip.valid = pointOnScreen(clip.finish.p[0].x, clip.finish.p[0].y) ||
 				pointOnScreen(clip.finish.p[1].x, clip.finish.p[1].y) ||
@@ -291,13 +301,11 @@ void Engine::OnRender() {
 		MUST KEEP THIS
 	*/
 
-	sort(listlistTriangles.begin(), listlistTriangles.end(), [](Triangle& t1, Triangle& t2) { return (t1.z) > (t2.z); });
+	sort(listlistTriangles.begin(), listlistTriangles.end(), [](const Triangle& t1, const Triangle& t2) { return (t1.z) > (t2.z); });
 		
 	for (const Triangle& tri : listlistTriangles)
 	{
-		
 		FloodGui::Context.GetBackgroundDrawList()->AddTriangleFilled({ tri.p[0].x, tri.p[0].y }, { tri.p[1].x, tri.p[1].y }, { tri.p[2].x, tri.p[2].y }, tri.col);
-		render->DrawTri( tri.p[0].x, tri.p[0].y, tri.p[1].x, tri.p[1].y, tri.p[2].x, tri.p[2].y);
 	}
 
 	FloodGui::Context.GetForegroundDrawList()->AddText((std::to_string(listlistTriangles.size()) + " triangles").c_str(), { 50, 150 }, FloodColor(255, 0, 0, 255), 20.f, 12.f);
