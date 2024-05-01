@@ -3,12 +3,12 @@
 // Engine
 #include "../engine.h"
 
-bool intersectTriangle(Trace<Triangle>* tr, Triangle* triangle) {
+bool intersectTriangle(Trace<Triangle>* tr, const Triangle& triangle) {
     const float EPSILON = 0.0000001f;
 
     //  two edges of the triangle
-    Vector3 edge1 = triangle->p[1] - triangle->p[0];
-    Vector3 edge2 = triangle->p[2] - triangle->p[0];
+    Vector3 edge1 = Vector3(triangle.p[1]) - triangle.p[0];
+    Vector3 edge2 = Vector3(triangle.p[2]) - triangle.p[0];
 
     Vector3 h = tr->direction.CrossProduct(edge2);
     float a = edge1.DotProduct(h);
@@ -19,7 +19,7 @@ bool intersectTriangle(Trace<Triangle>* tr, Triangle* triangle) {
     }
 
     float f = 1.0f / a;
-    Vector3 s = tr->origin - triangle->p[0];
+    Vector3 s = tr->origin - triangle.p[0];
     float u = f * s.DotProduct(h);
 
     //  intersection point is outside the triangle
@@ -47,19 +47,19 @@ bool intersectTriangle(Trace<Triangle>* tr, Triangle* triangle) {
     return false;
 }
 
-void Trace<Triangle>::TraceLine(Engine* engine,std::vector<Triangle*>& allTri) {
+void Trace<Triangle>::TraceLine(Engine* engine,std::vector<Triangle>& allTri) {
 	collided = false;
 	end = origin;
 
     float flClose = 99999.99f;
 
-	for (Triangle* tri : allTri) {
+	for (Triangle& tri : allTri) {
         if (intersectTriangle(this, tri))
         {
-            float dst = ((Vector3)(origin - tri->findTriangleCenter())).Length();
+            float dst = ((Vector3)(origin - tri.findTriangleCenter())).Length();
             if (dst < flClose) {
                 collided = true;
-                hit = *tri;
+                hit = tri;
                 flClose = dst;
             }
         }

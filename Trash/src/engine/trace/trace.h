@@ -14,5 +14,5 @@ struct Trace {
 	bool collided = false;
 	T hit;
 
-	void TraceLine(Engine* engine, std::vector<T*>& list);
+	void TraceLine(Engine* engine, std::vector<T>& allTri);
 };

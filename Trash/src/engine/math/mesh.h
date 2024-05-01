@@ -118,14 +118,6 @@ struct Triangle {
 struct Mesh {
 	std::vector<Triangle>triangles;
 
-	std::vector<Triangle*>ptrTriangles;
-
-	void popPtrTri() {
-		ptrTriangles.reserve(triangles.size());
-		for (int i = 0; i < triangles.size(); i++)
-			ptrTriangles.push_back(&triangles[i]);
-	}
-
 	bool LoadFromObjectFile(std::string sFilename, bool bHasTexture = false)
 	{
 		std::ifstream f(sFilename);

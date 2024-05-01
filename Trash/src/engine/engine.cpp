@@ -105,7 +105,7 @@ bool isInside(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y)
 	return (A == A1 + A2 + A3);
 }
 
-void ProcessTriangles(Engine* engine, std::vector<Triangle*>* ptrTriangles, std::vector<Triangle>* triangles, std::vector<Triangle>* listlistTriangles, std::mutex* mutex)
+void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vector<Triangle>* listlistTriangles, std::mutex* mutex)
 {
 	const float& height = FloodGui::Context.Display.DisplaySize.y;
 	const float& width = FloodGui::Context.Display.DisplaySize.x;
@@ -118,7 +118,7 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle*>* ptrTriangles, std:
 		Triangle finish;
 	};
 
-	std::vector<Triangle*> allTris = engine->world.getAllTriangles();
+	std::vector<Triangle>& allTris = engine->world.getAllTriangles();
 
 	std::list<Triangle>list;
 	for (int jj = 0; jj < triangles->size(); jj++) {
@@ -161,7 +161,6 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle*>* ptrTriangles, std:
 			tr.origin = engine->camera.origin;
 			tr.direction = engine->camera.lookDir;
 			//tr.direction.Normalise();
-			std::vector<Triangle*> allTris = engine->world.getAllTriangles();
 			tr.TraceLine(engine, allTris);
 			
 			if (tr.collided && tri == tr.hit)
@@ -238,15 +237,13 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle*>* ptrTriangles, std:
 }
 
 void ProcessEngineObject(Engine* engine, EngineObject* obj, std::vector<Triangle>* listlistTriangles, std::mutex* mutex) {
-	size_t si = obj->worldmesh.ptrTriangles.size() / 2;
-	std::vector<Triangle*> ptriangleIn1{ obj->worldmesh.ptrTriangles.begin(), obj->worldmesh.ptrTriangles.begin() + si };
-	std::vector<Triangle*> ptriangleIn2{ obj->worldmesh.ptrTriangles.begin() + si, obj->worldmesh.ptrTriangles.end() };
+	size_t si = obj->worldmesh.triangles.size() / 2;
 
 	std::vector<Triangle> triangleIn1{ obj->worldmesh.triangles.begin(), obj->worldmesh.triangles.begin() + si };
 	std::vector<Triangle> triangleIn2{ obj->worldmesh.triangles.begin() + si, obj->worldmesh.triangles.end() };
 
-	std::thread thread1(ProcessTriangles, engine, &ptriangleIn1, &triangleIn1, listlistTriangles, mutex);
-	std::thread thread2(ProcessTriangles, engine, &ptriangleIn2, &triangleIn2, listlistTriangles, mutex);
+	std::thread thread1(ProcessTriangles, engine, &triangleIn1, listlistTriangles, mutex);
+	std::thread thread2(ProcessTriangles, engine, &triangleIn2, listlistTriangles, mutex);
 
 	thread1.join();
 	thread2.join();
@@ -278,9 +275,8 @@ void Engine::OnRender() {
 
 	std::vector<std::thread*>threads;
 	threads.reserve(EngineObjects.size());
-
+	
 	for (auto& [name, Object] : EngineObjects) {
-		static int o = 0;
 		EngineObject* obj = &Object;
 		std::thread* thread = new std::thread(ProcessEngineObject, this, obj, &listlistTriangles, (std::mutex*)&mutex);
 		threads.push_back(thread);

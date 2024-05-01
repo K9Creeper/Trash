@@ -15,12 +15,12 @@ public:
 
 private:
 	std::unordered_map<std::string, EngineObject>EngineObjects{};
-	std::vector<Triangle*>AllTriangle{};
+	std::vector<Triangle>AllTriangle{};
 
 public:
 	bool AddEngineObject(const std::string& meshName, const EngineObject& go);
 	std::unordered_map<std::string, EngineObject>& getEngineObjects() { return EngineObjects; }
-	std::vector<Triangle*> getAllTriangles() { return AllTriangle; }
+	std::vector<Triangle>& getAllTriangles() { return AllTriangle; }
 	Matrix4x4 matWorld;
 	std::vector<LightSource> lightSources;
 };
