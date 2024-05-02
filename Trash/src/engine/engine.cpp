@@ -7,8 +7,8 @@
 #include <thread>
 #include <mutex>
 
-
-bool raytracing = false;
+#include "render/d3dx9/Include/d3dx9.h"
+#pragma comment(lib, "src/engine/render/d3dx9/Lib/x64/d3dx9")
 
 Engine::Engine() {
 	render = new Render();
@@ -69,9 +69,33 @@ void InputThread(Engine* engine)
 
 void Engine::Start() {
 	Mesh cube;
-	if (cube.LoadFromObjectFile("mountains.obj")) {
-		world.AddEngineObject("ground", EngineObject(cube, { 0.f, 0.f, 0.f }));
-	}
+	cube.triangles = {
+
+		// SOUTH
+		{ {Vector3(0.0f, 0.0f, 0.0f),    Vector3(0.0f, 1.0f, 0.0f),    Vector3(1.0f, 1.0f, 0.0f)},	{	Vector3(0.0f, 1.0f, 1.0f),		Vector3(0.0f, 0.0f, 1.0f),		Vector3(1.0f, 0.0f, 1.0f)}},
+		{ {Vector3(0.0f, 0.0f, 0.0f),    Vector3(1.0f, 1.0f, 0.0f),    Vector3(1.0f, 0.0f, 0.0f)},	{	Vector3(0.0f, 1.0f, 1.0f),		Vector3(1.0f, 0.0f, 1.0f),		Vector3(1.0f, 1.0f, 1.0f)}},
+						  																			   
+		// EAST           																			   
+		{ {Vector3(1.0f, 0.0f, 0.0f),   Vector3(1.0f, 1.0f, 0.0f),   Vector3(1.0f, 1.0f, 1.0f)},		Vector3(0.0f, 1.0f, 1.0f),		Vector3(0.0f, 0.0f, 1.0f),		Vector3(1.0f, 0.0f, 1.0f)},
+		{ Vector3(1.0f, 0.0f, 0.0f),   Vector3(1.0f, 1.0f, 1.0f),   Vector3(1.0f, 0.0f, 1.0f)},		Vector3(0.0f, 1.0f, 1.0f),		Vector3(1.0f, 0.0f, 1.0f),		Vector3(1.0f, 1.0f, 1.0f) },
+						   																			   
+		// NORTH           																			   
+		{ {Vector3(1.0f, 0.0f, 1.0f),   Vector3(1.0f, 1.0f, 1.0f),   Vector3(0.0f, 1.0f, 1.0f) }, Vector3(0.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), Vector3(1.0f, 0.0f, 1.0f)},
+		{ {Vector3(1.0f, 0.0f, 1.0f),   Vector3(0.0f, 1.0f, 1.0f),   Vector3(0.0f, 0.0f, 1.0f) }, Vector3(0.0f, 1.0f, 1.0f), Vector3(1.0f, 0.0f, 1.0f), Vector3(1.0f, 1.0f, 1.0f)},
+						   																			   
+		// WEST            																			   
+		{ V{ector3(0.0f, 0.0f, 1.0f),   Vector3(0.0f, 1.0f, 1.0f),   Vector3(0.0f, 1.0f, 0.0f) }, Vector3(0.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), Vector3(1.0f, 0.0f, 1.0f)},
+		{ {Vector3(0.0f, 0.0f, 1.0f),   Vector3(0.0f, 1.0f, 0.0f),   Vector3(0.0f, 0.0f, 0.0f) }, Vector3(0.0f, 1.0f, 1.0f), Vector3(1.0f, 0.0f, 1.0f), Vector3(1.0f, 1.0f, 1.0f)},
+						   																			   
+		// TOP             																			   
+		{ {Vector3(0.0f, 1.0f, 0.0f),   Vector3(0.0f, 1.0f, 1.0f),   Vector3(1.0f, 1.0f, 1.0f) }, Vector3(0.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), Vector3(1.0f, 0.0f, 1.0f)},
+		{ {Vector3(0.0f, 1.0f, 0.0f),   Vector3(1.0f, 1.0f, 1.0f),   Vector3(1.0f, 1.0f, 0.0f) }, Vector3(0.0f, 1.0f, 1.0f), Vector3(1.0f, 0.0f, 1.0f), Vector3(1.0f, 1.0f, 1.0f)},
+						   																			  
+		// BOTTOM          																			  
+		{ {Vector3(1.0f, 0.0f, 1.0f),   Vector3(0.0f, 0.0f, 1.0f),   Vector3(0.0f, 0.0f, 0.0f) }, Vector3(0.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), Vector3(1.0f, 0.0f, 1.0f, },
+		{ {Vector3(1.0f, 0.0f, 1.0f),    Vector3(0.0f, 0.0f, 0.0f),   Vector3(1.0f, 0.0f, 0.0f) }, Vector3(0.0f, 1.0f, 1.0f), Vector3(1.0f, 0.0f, 1.0f), Vector3(1.0f, 1.0f, 1.0f)},
+
+		};
 	
 	world.lightSources.push_back({ {0, 100, 0}, 999.9f});
 
@@ -271,6 +295,15 @@ void ProcessEngineObject(Engine* engine, EngineObject* obj, std::vector<Triangle
 	thread2.join();
 }
 
+LPDIRECT3DTEXTURE9 LoadTexture(IDirect3DDevice9* dev, LPCWSTR src) {
+	LPDIRECT3DTEXTURE9 texture;
+	if (D3D_OK != D3DXCreateTextureFromFile(dev, src, &texture)) {
+		texture->Release();
+		return nullptr;
+	}
+	return texture;
+}
+
 void Engine::OnRender() {
 	const float& height = FloodGui::Context.Display.DisplaySize.y;
 	const float& width = FloodGui::Context.Display.DisplaySize.x;
@@ -320,9 +353,11 @@ void Engine::OnRender() {
 		return tri.z > tri2.z;
 	});
 
+	static auto texture = LoadTexture(render->getWindow()->getD3DDev(), L"images.jpg");
+
 	for (const Triangle& tri : listlistTriangles)
 	{
-		FloodGui::Context.GetBackgroundDrawList()->AddTriangleFilled({ tri.p[0].x, tri.p[0].y }, { tri.p[1].x, tri.p[1].y }, { tri.p[2].x, tri.p[2].y }, tri.col);
+		FloodGui::Context.GetBackgroundDrawList()->AddTriangleFilled({ tri.p[0].x, tri.p[0].y }, { tri.p[1].x, tri.p[1].y }, { tri.p[2].x, tri.p[2].y }, tri.col, texture);
 	}
 
 	FloodGui::Context.GetForegroundDrawList()->AddText((std::to_string(listlistTriangles.size()) + " triangles").c_str(), { 50, 150 }, FloodColor(255, 0, 0, 255), 20.f, 12.f);

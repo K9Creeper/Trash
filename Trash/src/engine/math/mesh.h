@@ -11,7 +11,7 @@
 struct Triangle {
 
 	Vector3 p[3];
-	Vector3 t[3];
+	Vector3 t[3]; // u, v, w
 
 	FloodColor col;
 

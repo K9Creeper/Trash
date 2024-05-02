@@ -379,8 +379,8 @@ void FloodGuiD3D9RenderDrawData(FloodDrawData* drawData) {
             // This is to clip the drawings to inside the window
 
             // Why was the time??
-            if (material.texture)
-                backend_data->pd3dDevice->SetTexture(0, material.texture);
+            
+            backend_data->pd3dDevice->SetTexture(0, material.texture);
 
             backend_data->pd3dDevice->SetScissorRect(&r);
             // This is where we draw our vertexs and points
@@ -1022,13 +1022,13 @@ void FloodDrawList::AllocRectFilled(const FloodVector2& min, const FloodVector2&
     VertexCurrentIdx += 4;
     IndexWrite += 6;
 }
-void FloodDrawList::AddTriangleFilled(const FloodVector2& a, const FloodVector2& b, const FloodVector2& c, FloodColor col, LPDIRECT3DTEXTURE9 texture) {
+void FloodDrawList::AddTriangleFilled(const FloodVector2& a, const FloodVector2& b, const FloodVector2& c, FloodColor col, LPDIRECT3DTEXTURE9 texture, FloodVector2 uv1, FloodVector2 uv2, FloodVector2 uv3) {
     static const int index_count = 4, vertex_count = 3;
     Elements.push_back(FloodDrawMaterial{ {a,b,c},  col, 0.f, index_count, vertex_count, texture });
     ReserveGeo(index_count, vertex_count);
-    AllocTriFilled(a, b, c, col);
+    AllocTriFilled(a, b, c, col, uv1, uv2, uv3);
 }
-void FloodDrawList::AllocTriFilled(const FloodVector2& a, const FloodVector2& b, const FloodVector2& c, FloodColor col)
+void FloodDrawList::AllocTriFilled(const FloodVector2& a, const FloodVector2& b, const FloodVector2& c, FloodColor col, FloodVector2 uv1, FloodVector2 uv2, FloodVector2 uv3)
 {
     FloodVector2 uv(0.f, 0.f);
     unsigned int color = col.ToU32();
@@ -1038,9 +1038,9 @@ void FloodDrawList::AllocTriFilled(const FloodVector2& a, const FloodVector2& b,
     IndexWrite[2] = (FloodDrawIndex)(idx + 2);
     IndexWrite[3] = (FloodDrawIndex)(idx);
 
-    VertexWrite[0].position = a; VertexWrite[0].uv = uv; VertexWrite[0].col = color;
-    VertexWrite[1].position = b; VertexWrite[1].uv = uv; VertexWrite[1].col = color;
-    VertexWrite[2].position = c; VertexWrite[2].uv = uv; VertexWrite[2].col = color;
+    VertexWrite[0].position = a; VertexWrite[0].uv = uv1; VertexWrite[0].col = color;
+    VertexWrite[1].position = b; VertexWrite[1].uv = uv2; VertexWrite[1].col = color;
+    VertexWrite[2].position = c; VertexWrite[2].uv = uv3; VertexWrite[2].col = color;
     VertexWrite += 3;
     VertexCurrentIdx += 3;
     IndexWrite += 4;

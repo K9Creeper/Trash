@@ -151,7 +151,3 @@ void Render::Init() {
 void Render::Begin(std::function<void()> handle) {
 	window->RunAndAttachFlood(handle);
 }
-
-void Render::DrawPixel(float x1, float y1, FloodColor col) {
-	FloodGui::Context.GetBackgroundDrawList()->AddPolyLine({ {x1, y1}, {x1, y1} }, col);
-}

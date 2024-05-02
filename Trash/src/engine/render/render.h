@@ -45,7 +45,7 @@ public:
 	void Init();
 	void Begin(std::function<void()> handle);
 
-	void DrawPixel(float x1, float y1, FloodColor col);
+	std::unordered_map<std::string, LPDIRECT3DTEXTURE9*>loadedTextures{};
 
 	Window* getWindow() { return window; }
 };
