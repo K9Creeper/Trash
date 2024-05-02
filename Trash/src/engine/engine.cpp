@@ -18,7 +18,17 @@ void InputThread(Engine* engine)
 {
 	while (engine->running)
 	{
-		Vector3 vForward = (engine->camera.lookDir * 8.0f * 0.09f);
+		static Vector3 vForward;
+
+		{
+			// Use camera math to simulate a non-pitch camera direction
+			// we can use this to like do cool things
+			Vector3 vTarget = { 0,0,1 };
+
+			Matrix4x4 matCameraRoty; matCameraRoty.MakeRotationY(engine->camera.rotation.yaw);
+
+			vForward = matCameraRoty.MultiplyVector(vTarget) * 8.f * 0.15f;
+		}
 		Vector3 vRight = Vector3(vForward.z, 0, -vForward.x);
 
 		// Standard FPS Control scheme, but turn instead of strafe
