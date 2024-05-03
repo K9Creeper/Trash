@@ -15,19 +15,22 @@ Matrix4x4& ProjectionMatrix::Create() {
 bool ProjectionMatrix::WorldToScreen(const Triangle& in, Triangle& out) {
 
 	static float w;
+	for (int i = 0; i < 3; i++) {
+		out.p[i] = matrix.MultiplyVectorW(in.p[i], w);
+		out.p[i].z = w;
+		if (w < 0.001f) return false;
+		
+		out.p[i].x *= -1.0f;
+		out.p[i].y *= -1.0f;
 
-	out.p[0] = matrix.MultiplyVectorW(in.p[0], w);
-	if (w < 0.001f) return false;
+		static Vector3 vOffsetView = { 1,1,0 };
+		out.p[i] = (out.p[i] + vOffsetView);
+		out.p[i].x *= 0.5f * (float)FloodGui::Context.Display.DisplaySize.x;
+		out.p[i].y *= 0.5f * (float)FloodGui::Context.Display.DisplaySize.y;
 
-	out.p[1] = matrix.MultiplyVectorW(in.p[1], w);
-	if (w < 0.001f) return false;
-
-	out.p[2] = matrix.MultiplyVectorW(in.p[2], w);
-	if (w < 0.001f) return false;
-
-	out.t[0] = in.t[0];
-	out.t[1] = in.t[1];
-	out.t[2] = in.t[2];
+		out.t[i].x = in.t[i].x / out.p[i].z;
+		out.t[i].y = in.t[i].y / out.p[i].z;
+	}
 
 	return true;
 }

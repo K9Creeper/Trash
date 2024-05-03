@@ -38,14 +38,13 @@ public:
 	}
 };
 
-inline Vector3 Vector_IntersectPlane(Vector3& plane_p, Vector3& plane_n, Vector3& lineStart, Vector3& lineEnd)
+inline Vector3 Vector_IntersectPlane(Vector3& plane_p, Vector3& plane_n, Vector3& lineStart, Vector3& lineEnd, float& t)
 {
 	plane_n.Normalise();
 	const float& plane_d = -plane_n.DotProduct(plane_p);
 	const float& ad = lineStart.DotProduct(plane_n);
 	const float& bd = lineEnd.DotProduct(plane_n);
-	const float& t = (-plane_d - ad) / (bd - ad);
-	Vector3 lineStartToEnd = (lineEnd - lineStart);
+	t = (-plane_d - ad) / (bd - ad); Vector3 lineStartToEnd = (lineEnd - lineStart);
 	Vector3 lineToIntersect = (lineStartToEnd * t);
 	return (lineStart + lineToIntersect);
 }

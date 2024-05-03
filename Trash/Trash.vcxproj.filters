@@ -377,4 +377,9 @@
   <ItemGroup>
     <Library Include="src\engine\render\d3dx9\Lib\x64\d3dx9.lib" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="images.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

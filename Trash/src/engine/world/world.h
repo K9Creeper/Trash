@@ -8,6 +8,7 @@ struct LightSource {
 public:
 	Vector3 origin;
 	float strenghRad;
+	FloodColor lightCol = FloodColor(255, 255, 255, 255);
 };
 
 class World {

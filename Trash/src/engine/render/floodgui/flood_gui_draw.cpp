@@ -341,11 +341,13 @@ void FloodGuiD3D9RenderDrawData(FloodDrawData* drawData) {
         backend_data->pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
         backend_data->pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
         backend_data->pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+        backend_data->pd3dDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT3 | D3DTTFF_PROJECTED);
+
         backend_data->pd3dDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
         backend_data->pd3dDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+
         backend_data->pd3dDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
         backend_data->pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-
         // We set up our viewmatrix..this is very important
         {
             D3DMATRIX mat_identity = { { { 1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f } } };
@@ -378,8 +380,8 @@ void FloodGuiD3D9RenderDrawData(FloodDrawData* drawData) {
             const FloodDrawMaterial& material = cmd_list->Elements[i];
             // This is to clip the drawings to inside the window
 
-            // Why was the time??
-            
+            // Why was the time??        
+
             backend_data->pd3dDevice->SetTexture(0, material.texture);
 
             backend_data->pd3dDevice->SetScissorRect(&r);
@@ -1030,7 +1032,6 @@ void FloodDrawList::AddTriangleFilled(const FloodVector2& a, const FloodVector2&
 }
 void FloodDrawList::AllocTriFilled(const FloodVector2& a, const FloodVector2& b, const FloodVector2& c, FloodColor col, FloodVector2 uv1, FloodVector2 uv2, FloodVector2 uv3)
 {
-    FloodVector2 uv(0.f, 0.f);
     unsigned int color = col.ToU32();
     FloodDrawIndex idx = (FloodDrawIndex)VertexCurrentIdx;
     IndexWrite[0] = idx;
