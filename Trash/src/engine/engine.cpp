@@ -45,11 +45,11 @@ void InputThread(Engine* engine)
 			engine->camera.origin = (engine->camera.origin - vRight);
 		}
 
-		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_Q].raw_down) {
-			engine->camera.origin.y += 2.0f;
+		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_Space].raw_down) {
+			engine->camera.origin.y += 0.5f;
 		}
-		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_E].raw_down) {
-			engine->camera.origin.y -= 2.0f;
+		if (FloodGui::Context.IO.KeyboardInputs[FloodGuiKey_C].raw_down) {
+			engine->camera.origin.y -= 0.5f;
 		}
 
 		static POINT p;
@@ -69,37 +69,24 @@ void InputThread(Engine* engine)
 
 void Engine::Start() {
 	Mesh cube;
-	cube.triangles = {
-		Triangle{ {Vector3(0.0f, 0.0f, 0.0f),    Vector3(0.0f, 1.0f, 0.0f),    Vector3(1.0f, 1.0f, 0.0f)},	{ FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 0.0f), FloodVector2(0.0f, 1.0f)}},
-		Triangle{ {Vector3(0.0f, 0.0f, 0.0f),    Vector3(1.0f, 1.0f, 0.0f),    Vector3(1.0f, 0.0f, 0.0f)},	{ FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 1.0f), FloodVector2(1.0f, 1.0f)}},
-						  																			   
-		// EAST           																			   
-		Triangle{ {Vector3(1.0f, 0.0f, 0.0f),   Vector3(1.0f, 1.0f, 0.0f),   Vector3(1.0f, 1.0f, 1.0f)},	{ FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 0.0f), FloodVector2(0.0f, 1.0f)} },
-		Triangle{ {Vector3(1.0f, 0.0f, 0.0f),   Vector3(1.0f, 1.0f, 1.0f),   Vector3(1.0f, 0.0f, 1.0f)},	{ FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 1.0f), FloodVector2(1.0f, 1.0f)} },
-						   																			   
-		// NORTH           																			   
-		Triangle{ {Vector3(1.0f, 0.0f, 1.0f),   Vector3(1.0f, 1.0f, 1.0f),   Vector3(0.0f, 1.0f, 1.0f) }, { FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 0.0f), FloodVector2(0.0f, 1.0f)} },
-		Triangle{ {Vector3(1.0f, 0.0f, 1.0f),   Vector3(0.0f, 1.0f, 1.0f),   Vector3(0.0f, 0.0f, 1.0f) }, { FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 1.0f), FloodVector2(1.0f, 1.0f)} },
-						   																			   
-		// WEST            																			   
-		{ {Vector3(0.0f, 0.0f, 1.0f),   Vector3(0.0f, 1.0f, 1.0f),   Vector3(0.0f, 1.0f, 0.0f) }, { FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 0.0f), FloodVector2(0.0f, 1.0f)} },
-		{ {Vector3(0.0f, 0.0f, 1.0f),   Vector3(0.0f, 1.0f, 0.0f),   Vector3(0.0f, 0.0f, 0.0f) }, { FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 1.0f), FloodVector2(1.0f, 1.0f)} },
-						   																			   
+	cube.triangles = { 																			   
 		// TOP             																			   
-		{ {Vector3(0.0f, 1.0f, 0.0f),   Vector3(0.0f, 1.0f, 1.0f),   Vector3(1.0f, 1.0f, 1.0f) }, { FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 0.0f), FloodVector2(0.0f, 1.0f)} },
-		{ {Vector3(0.0f, 1.0f, 0.0f),   Vector3(1.0f, 1.0f, 1.0f),   Vector3(1.0f, 1.0f, 0.0f) }, { FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 1.0f), FloodVector2(1.0f, 1.0f)} },
+		{ {Vector3(0.0f, 1.0f, 0.0f),   Vector3(0.0f, 1.0f, 1.0f),   Vector3(1.0f, 1.0f, 1.0f) }, { Vector3(1.0f, 0.0f, 1.f), Vector3(0.0f, 0.0f, 1.f), Vector3(0.0f, 1.0f, 1.f)} },
+		{ {Vector3(0.0f, 1.0f, 0.0f),   Vector3(1.0f, 1.0f, 1.0f),   Vector3(1.0f, 1.0f, 0.0f) }, { Vector3(1.0f, 0.0f, 1.f), Vector3(0.0f, 1.0f, 1.f), Vector3(1.0f, 1.0f, 1.f)} },
 						   																			  
 		// BOTTOM          																			  
-		{ {Vector3(1.0f, 0.0f, 1.0f),   Vector3(0.0f, 0.0f, 1.0f),   Vector3(0.0f, 0.0f, 0.0f) }, { FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 0.0f), FloodVector2(0.0f, 1.0f)} },
-		{ {Vector3(1.0f, 0.0f, 1.0f),    Vector3(0.0f, 0.0f, 0.0f),   Vector3(1.0f, 0.0f, 0.0f) },{ FloodVector2(1.0f, 0.0f), FloodVector2(0.0f, 1.0f), FloodVector2(1.0f, 1.0f)} },
+		//{ {Vector3(1.0f, 0.0f, 1.0f),   Vector3(0.0f, 0.0f, 1.0f),   Vector3(0.0f, 0.0f, 0.0f) }, { Vector3(1.0f, 0.0f, 1.f), Vector3(0.0f, 0.0f, 1.f), Vector3(0.0f, 1.0f, 1.f)} },
+		//{ {Vector3(1.0f, 0.0f, 1.0f),    Vector3(0.0f, 0.0f, 0.0f),   Vector3(1.0f, 0.0f, 0.0f) },{ Vector3(1.0f, 0.0f, 1.f), Vector3(0.0f, 1.0f, 1.f), Vector3(1.0f, 1.0f, 1.f)} },
 
 		};
 	
-	world.AddEngineObject("CUBE", {cube, Vector3(0.f, 15.f, 0.f), 5.f});
+	world.AddEngineObject("CUBE", {cube, Vector3(0.f, -1.f, 0.f), 2.f});
 
 	world.lightSources.push_back({ {0, 100, 0}, 999.9f});
 
 	render->Init();
+
+	pDepthBuffer = new float[FloodGui::Context.Display.DisplaySize.x * FloodGui::Context.Display.DisplaySize.y];
 
 	camera.Create(90.f);
 
@@ -142,6 +129,24 @@ bool isInside(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y)
 	float A3 = area(x1, y1, x2, y2, x, y);
 
 	return (A == A1 + A2 + A3);
+}
+
+FloodVector3 TransformToScreenSpace(const FloodVector3& point, const Matrix4x4& viewMatrix, const ProjectionMatrix& projectionMatrix, float screenWidth, float screenHeight)
+{
+	// Combine the view and projection matrices
+	Matrix4x4 viewProjectionMatrix;
+	viewProjectionMatrix.MultiplyMatrix(viewMatrix, projectionMatrix.matrix);
+
+	// Transform the point from camera space to clip space
+	float w;
+	Vector3 pointClip = viewProjectionMatrix.MultiplyVectorW(point, w);
+
+	// Transform the point from clip space to screen space
+	float x = (1.0f + pointClip.x) * screenWidth / 2.0f;
+	float y = (1.0f - pointClip.y) * screenHeight / 2.0f;
+	float z = w;
+
+	return FloodVector3(x, y, z);
 }
 
 void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vector<Triangle>* listlistTriangles, std::mutex* mutex)
@@ -216,7 +221,6 @@ void ProcessTriangles(Engine* engine, std::vector<Triangle>* triangles, std::vec
 				continue;
 
 			clip.finish.col = clip.clipped[n].col;
-			
 
 			// Check if triangle is on screen
 			clip.valid = pointOnScreen(clip.finish.p[0].x, clip.finish.p[0].y) ||
@@ -286,6 +290,15 @@ LPDIRECT3DTEXTURE9 LoadTexture(IDirect3DDevice9* dev, LPCWSTR src) {
 	return texture;
 }
 
+void TexturedTriangle(Engine* eng, float x1, float y1, float u1, float v1, float w1,
+	float x2, float y2, float u2, float v2, float w2,
+	float x3, float y3, float u3, float v3, float w3,
+	const LPDIRECT3DTEXTURE9& tex, const FloodColor& col)
+{
+
+	FloodGui::Context.GetBackgroundDrawList()->AddTriangleFilled({ x1, y1 }, { x2, y2 }, { x3, y3 }, col, tex, { u1, v1 }, { u2, v2 }, {u3, v3});
+}
+
 void Engine::OnRender() {
 	const float& height = FloodGui::Context.Display.DisplaySize.y;
 	const float& width = FloodGui::Context.Display.DisplaySize.x;
@@ -337,10 +350,18 @@ void Engine::OnRender() {
 
 	static auto texture = LoadTexture(render->getWindow()->getD3DDev(), L"images.jpg");
 
-	for (const Triangle& tri : listlistTriangles)
+	for (int i = 0; i < FloodGui::Context.Display.DisplaySize.x * FloodGui::Context.Display.DisplaySize.y; i++)
+		pDepthBuffer[i] = 0.0f;
+
+	for (const Triangle& t : listlistTriangles)
 	{
-		FloodGui::Context.GetBackgroundDrawList()->AddTriangleFilled({ tri.p[0].x, tri.p[0].y }, { tri.p[1].x, tri.p[1].y }, { tri.p[2].x, tri.p[2].y }, tri.col, texture, tri.t[0], tri.t[1], tri.t[2]);
+		TexturedTriangle(this,
+			t.p[0].x, t.p[0].y, t.t[0].x, t.t[0].y, t.t[0].z,
+			t.p[1].x, t.p[1].y, t.t[1].x, t.t[1].y, t.t[1].z,
+			t.p[2].x, t.p[2].y, t.t[2].x, t.t[2].y, t.t[2].z, 
+			texture, t.col);
 	}
+
 
 	FloodGui::Context.GetForegroundDrawList()->AddText((std::to_string(listlistTriangles.size()) + " triangles").c_str(), { 50, 150 }, FloodColor(255, 0, 0, 255), 20.f, 12.f);
 

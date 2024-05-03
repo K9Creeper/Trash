@@ -19,7 +19,13 @@ bool ProjectionMatrix::WorldToScreen(const Triangle& in, Triangle& out) {
 		out.p[i] = matrix.MultiplyVectorW(in.p[i], w);
 		out.p[i].z = w;
 		if (w < 0.001f) return false;
-		
+
+		out.t[i] = in.t[i];
+
+		out.t[i].x = out.t[i].x / out.p[i].z;
+		out.t[i].y = out.t[i].y / out.p[i].z;
+		out.t[i].z = 1.0f / out.p[i].z;
+
 		out.p[i].x *= -1.0f;
 		out.p[i].y *= -1.0f;
 
@@ -27,9 +33,6 @@ bool ProjectionMatrix::WorldToScreen(const Triangle& in, Triangle& out) {
 		out.p[i] = (out.p[i] + vOffsetView);
 		out.p[i].x *= 0.5f * (float)FloodGui::Context.Display.DisplaySize.x;
 		out.p[i].y *= 0.5f * (float)FloodGui::Context.Display.DisplaySize.y;
-
-		out.t[i].x = in.t[i].x / out.p[i].z;
-		out.t[i].y = in.t[i].y / out.p[i].z;
 	}
 
 	return true;

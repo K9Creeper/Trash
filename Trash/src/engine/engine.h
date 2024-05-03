@@ -12,6 +12,7 @@ public:
 	Engine();
 	~Engine() {
 		delete render;
+		delete pDepthBuffer;
 	}
 
 	void Start();
@@ -23,6 +24,8 @@ private:
 public:
 	Camera camera;
 	World world;
+
+	float* pDepthBuffer = nullptr;
 
 	Render* render;
 

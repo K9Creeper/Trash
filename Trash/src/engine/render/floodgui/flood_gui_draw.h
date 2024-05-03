@@ -97,7 +97,7 @@ public:
 	void AddLine(const FloodVector2& p1, const FloodVector2& p2, FloodColor col, float thickness = 1.f);
 	void AddRect(const FloodVector2& min, const FloodVector2& max, FloodColor col, float thickness = 1.f);
 	void AddPolyLine(const std::vector<FloodVector2> points, FloodColor col, float thickness = 1.f);
-	void AddRectFilled(const FloodVector2& min, const FloodVector2& max, FloodColor col, LPDIRECT3DTEXTURE9 texture = nullptr);
+	void AddRectFilled(const FloodVector2& min, const FloodVector2& max, FloodColor col, LPDIRECT3DTEXTURE9 texture = nullptr, FloodVector2 uv1 = FloodVector2(), FloodVector2 uv2 = FloodVector2(), FloodVector2 uv3 = FloodVector2(), FloodVector2 uv4 = FloodVector2());
 	void AddTriangleFilled(const FloodVector2& a, const FloodVector2& b, const FloodVector2& c, FloodColor col, LPDIRECT3DTEXTURE9 texture = nullptr, FloodVector2 uv1 = FloodVector2(), FloodVector2 uv2 = FloodVector2(), FloodVector2 uv3 = FloodVector2());
 
 	void AddText(const char* text, const FloodVector2& position, FloodColor col, float font_size, float spacing=16);
@@ -112,7 +112,7 @@ public:
 		VertexCurrentIdx = 0;
 	}
 private:
-	void AllocRectFilled(const FloodVector2& min, const FloodVector2& max, FloodColor col);
+	void AllocRectFilled(const FloodVector2& min, const FloodVector2& max, FloodColor col, FloodVector2 uv1, FloodVector2 uv2, FloodVector2 uv3, FloodVector2 uv4);
 	void AllocTriFilled(const FloodVector2& a, const FloodVector2& b, const FloodVector2& c, FloodColor col, FloodVector2 uv1, FloodVector2 uv2, FloodVector2 uv3);
 	void AllocChar(char text, const FloodVector2& position, FloodColor col, float font_size);
 

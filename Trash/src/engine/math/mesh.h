@@ -11,7 +11,7 @@
 struct Triangle {
 
 	Vector3 p[3];
-	FloodVector2 t[3]; // u, v, w
+	Vector3 t[3]; // u, v, w
 
 	FloodColor col;
 
@@ -49,8 +49,8 @@ struct Triangle {
 		// If distance sign is positive, point lies on "inside" of plane
 		Vector3* inside_points[3];  int nInsidePointCount = 0;
 		Vector3* outside_points[3]; int nOutsidePointCount = 0;
-		FloodVector2* inside_tex[3]; int nInsideTexCount = 0;
-		FloodVector2* outside_tex[3]; int nOutsideTexCount = 0;
+		Vector3* inside_tex[3]; int nInsideTexCount = 0;
+		Vector3* outside_tex[3]; int nOutsideTexCount = 0;
 
 
 		// Get signed distance of each point in triangle to plane
@@ -114,10 +114,12 @@ struct Triangle {
 			out_tri1.p[1] = Vector_IntersectPlane(plane_p, plane_n, *inside_points[0], *outside_points[0], t);
 			out_tri1.t[1].x = t * (outside_tex[0]->x - inside_tex[0]->x) + inside_tex[0]->x;
 			out_tri1.t[1].y = t * (outside_tex[0]->y - inside_tex[0]->y) + inside_tex[0]->y;
+			out_tri1.t[1].z = t * (outside_tex[0]->z - inside_tex[0]->z) + inside_tex[0]->z;
 
 			out_tri1.p[2] = Vector_IntersectPlane(plane_p, plane_n, *inside_points[0], *outside_points[1], t);
 			out_tri1.t[2].x = t * (outside_tex[1]->x - inside_tex[0]->x) + inside_tex[0]->x;
 			out_tri1.t[2].y = t * (outside_tex[1]->y - inside_tex[0]->y) + inside_tex[0]->y;
+			out_tri1.t[2].z = t * (outside_tex[1]->z - inside_tex[0]->z) + inside_tex[0]->z;
 
 			return 1; // Return the newly formed single triangle
 		}
@@ -145,6 +147,7 @@ struct Triangle {
 			out_tri1.p[2] = Vector_IntersectPlane(plane_p, plane_n, *inside_points[0], *outside_points[0], t);
 			out_tri1.t[2].x = t * (outside_tex[0]->x - inside_tex[0]->x) + inside_tex[0]->x;
 			out_tri1.t[2].y = t * (outside_tex[0]->y - inside_tex[0]->y) + inside_tex[0]->y;
+			out_tri1.t[2].z = t * (outside_tex[0]->z - inside_tex[0]->z) + inside_tex[0]->z;
 
 			// The second triangle is composed of one of he inside points, a
 			// new point determined by the intersection of the other side of the 
@@ -156,6 +159,8 @@ struct Triangle {
 			out_tri2.p[2] = Vector_IntersectPlane(plane_p, plane_n, *inside_points[1], *outside_points[0], t);
 			out_tri2.t[2].x = t * (outside_tex[0]->x - inside_tex[1]->x) + inside_tex[1]->x;
 			out_tri2.t[2].y = t * (outside_tex[0]->y - inside_tex[1]->y) + inside_tex[1]->y;
+			out_tri2.t[2].z = t * (outside_tex[0]->z - inside_tex[1]->z) + inside_tex[1]->z;
+
 			return 2; // Return two newly formed triangles which form a quad
 		}
 	}
@@ -171,7 +176,7 @@ struct Mesh {
 			return false;
 
 		std::vector<Vector3> verts;
-		std::vector<FloodVector2> texs;
+		std::vector<Vector3> texs;
 
 		while (!f.eof())
 		{
@@ -189,7 +194,7 @@ struct Mesh {
 				{
 					FloodVector2 v;
 					s >> junk >> junk >> v.x >> v.y;
-					texs.push_back({v.x, v.y});
+					texs.push_back({v.x, v.y, 1.f});
 				}
 				else
 				{

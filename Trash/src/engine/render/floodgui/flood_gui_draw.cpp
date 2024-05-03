@@ -341,6 +341,7 @@ void FloodGuiD3D9RenderDrawData(FloodDrawData* drawData) {
         backend_data->pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
         backend_data->pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
         backend_data->pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+
         backend_data->pd3dDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT3 | D3DTTFF_PROJECTED);
 
         backend_data->pd3dDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
@@ -989,12 +990,12 @@ bool FloodGui::Hotkey(const char* id, uint16_t key, bool global)
 //                  //
 //  Flood Draw List //
 //                  //
-void FloodDrawList::AddRectFilled(const FloodVector2& min, const FloodVector2& max, FloodColor col, LPDIRECT3DTEXTURE9 texture)
+void FloodDrawList::AddRectFilled(const FloodVector2& min, const FloodVector2& max, FloodColor col, LPDIRECT3DTEXTURE9 texture, FloodVector2 uv1, FloodVector2 uv2, FloodVector2 uv3, FloodVector2 uv4)
 {
     static const int index_count = 6, vertex_count = 4;
     Elements.push_back(FloodDrawMaterial{ { min, {max.x,min.y}, max, { min.x, max.y } },  col, 0.f, index_count, vertex_count, texture });
     ReserveGeo(index_count, vertex_count);
-    AllocRectFilled(min, max, col);
+    AllocRectFilled(min, max, col, uv1, uv2, uv3, uv4);
 }
 void FloodDrawList::ReserveGeo(const int& index_count, const int& vertex_count)
 {
@@ -1007,19 +1008,18 @@ void FloodDrawList::ReserveGeo(const int& index_count, const int& vertex_count)
     IndexBuffer.resize(idx_buffer_old_size + index_count);
     IndexWrite = (IndexBuffer.data() + idx_buffer_old_size);
 }
-void FloodDrawList::AllocRectFilled(const FloodVector2& min, const FloodVector2& max, FloodColor col)
+void FloodDrawList::AllocRectFilled(const FloodVector2& min, const FloodVector2& max, FloodColor col, FloodVector2 uv1, FloodVector2 uv2, FloodVector2 uv3, FloodVector2 uv4)
 {
     FloodVector2 b(max.x, min.y);
     FloodVector2 d(min.x, max.y);
-    FloodVector2 uv(0.f, 0.f);
     FloodDrawIndex idx = (FloodDrawIndex)VertexCurrentIdx;
     unsigned int color = col.ToU32();
     IndexWrite[0] = idx; IndexWrite[1] = (FloodDrawIndex)(idx + 1); IndexWrite[2] = (FloodDrawIndex)(idx + 2);
     IndexWrite[3] = idx; IndexWrite[4] = (FloodDrawIndex)(idx + 2); IndexWrite[5] = (FloodDrawIndex)(idx + 3);
-    VertexWrite[0].position = min; VertexWrite[0].uv = uv; VertexWrite[0].col = color;
-    VertexWrite[1].position = b; VertexWrite[1].uv = uv; VertexWrite[1].col = color;
-    VertexWrite[2].position = max; VertexWrite[2].uv = uv; VertexWrite[2].col = color;
-    VertexWrite[3].position = d; VertexWrite[3].uv = uv; VertexWrite[3].col = color;
+    VertexWrite[0].position = min; VertexWrite[0].uv = uv1; VertexWrite[0].col = color;
+    VertexWrite[1].position = b; VertexWrite[1].uv = uv2; VertexWrite[1].col = color;
+    VertexWrite[2].position = max; VertexWrite[2].uv = uv3; VertexWrite[2].col = color;
+    VertexWrite[3].position = d; VertexWrite[3].uv = uv4; VertexWrite[3].col = color;
     VertexWrite += 4;
     VertexCurrentIdx += 4;
     IndexWrite += 6;

@@ -21,7 +21,7 @@ public:
 	ProjectionMatrix matProj;
 	Matrix4x4 matView;
 
-	Vector3 origin;
+	Vector3 origin = Vector3(0.f, 1.f, 0.f);
 	Vector3 lookDir;
 
 	struct Rotation {
